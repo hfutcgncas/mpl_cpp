@@ -12,6 +12,7 @@ set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/usr/local/share/OpenCV")
 include_directories( ${PROJECT_SOURCE_DIR}/include 
                      ${PROJECT_SOURCE_DIR}/Thirdparty/yaml-cpp/include # yaml-cpp
                      ${PROJECT_SOURCE_DIR}/Thirdparty/boost_1_7_0  # boost
+                     ${PROJECT_SOURCE_DIR}/Thirdparty/eigen        # eigen 
                    )
 
 #lib link

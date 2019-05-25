@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "yaml-cpp/yaml.h"
+#include "tf_Graph.hpp"
 
 namespace RobotModel
 {
@@ -39,10 +40,22 @@ map<string, T> parseYAMLMap(YAML::Node yaml_map)
     return M;
 }
 
-class Joint
+template <class T>
+inline T norm(vector<T> v)
+{
+    T rt = 0;
+    for(auto item : v)
+    {
+        rt += (item * item);
+    }
+    return rt;
+}
+
+
+class Joint: public tf_Graph::TF
 {
 public:
-    string name;
+    // string name;
     string child;
     string parent;
     string type;
@@ -55,6 +68,21 @@ public:
     float limit_lower;
     float limit_upper;
 
+    double value;
+    
+    Eigen::Isometry3d trans_ori;
+ 
+    void updateTf(double value)
+    {
+        if( type == "revolute" or type == "continuous")
+        {
+            Eigen::AngleAxisd dr_v( value, Eigen::Vector3d ( axis[0],axis[1],axis[2] ) ); 
+            Eigen::Isometry3d dr;
+            dr.rotate(dr_v);
+            trans = trans_ori* dr;
+        }
+    }
+
     void operator<<(const YAML::Node &node)
     {
         type = node["type"].as<string>();
@@ -65,6 +93,8 @@ public:
         origin_rpy = parseYAMLList<float>(node["origin"]["rpy"]);
         origin_xyz = parseYAMLList<float>(node["origin"]["xyz"]);
         axis = parseYAMLList<float>(node["axis"]);
+
+        value = 0;
 
         if (node["limit"].IsNull())
         {
@@ -80,6 +110,14 @@ public:
             limit_lower = node["limit"]["lower"].as<float>();
             limit_upper = node["limit"]["upper"].as<float>();
         }
+
+        // 参考视觉slam14 https://www.cnblogs.com/ChrisCoder/p/10083110.html
+        float ori_value = norm<float>(origin_rpy);
+        Eigen::AngleAxisd rotation_vector( ori_value, Eigen::Vector3d ( origin_rpy[0]/ori_value,origin_rpy[1]/ori_value,origin_rpy[2]/ori_value )   ); 
+        trans_ori.rotate(rotation_vector);
+        trans_ori.pretranslate(Eigen::Vector3d ( origin_xyz[0],origin_xyz[1],origin_xyz[2] ) );
+        trans = trans_ori;
+
     }
 
     Joint &operator=(const Joint &src)
@@ -97,6 +135,9 @@ public:
         limit_velocity = src.limit_velocity;
         limit_lower = src.limit_lower;
         limit_upper = src.limit_upper;
+
+        trans = src.trans;
+        trans_ori = src.trans_ori;
     }
 
     Joint() {}
@@ -106,16 +147,16 @@ public:
     }
 };
 
-class Link
+class Link:public tf_Graph::Frame
 {
 public:
     Link() {}
 
-    Link(string Name) : name(Name)
-    {
-    }
+    // Link(string Name) : name(Name), rt2base(Eigen::Isometry3d::Identity())
+    // {
+    // }
 
-    string name;
+    // string name;
 
     void operator<<(const YAML::Node &node)
     {
@@ -125,6 +166,7 @@ public:
     Link &operator=(const Link &src)
     {
         name = src.name;
+        rt2base = src.rt2base;
     }
 
     Link(const Link &src)

@@ -24,7 +24,7 @@ public:
     map<string, vector<Joint_Link_pair>> ChildMap;
 
 public:
-    TF_Graph tf_Graph;
+    tf_Graph::TF_Graph tf_tree;
 };
 
 } // namespace RobotModel
