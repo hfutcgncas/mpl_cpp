@@ -41,6 +41,9 @@ public:
     {
         rt2base = Eigen::Isometry3d::Identity();
     }
+
+    virtual ~Frame() {}
+
     Frame(const Frame &src) : rt2base(src.rt2base), name(src.name)
     {
     }
@@ -73,15 +76,15 @@ public:
         name = src.name;
         trans = src.trans;
     }
+
+    virtual ~TF() {}
 };
 
 
-// typedef std::shared_ptr<Frame>  pFrame_t;
-// typedef std::shared_ptr<TF>  pTF_t;
+typedef std::shared_ptr<Frame>  pFrame_t;
+typedef std::shared_ptr<TF>  pTF_t;
 
-
-
-typedef adjacency_list<listS, vecS, directedS, Frame, TF> DiGraph;
+typedef adjacency_list<listS, vecS, directedS, pFrame_t, pTF_t> DiGraph;
 typedef typename graph_traits<DiGraph>::vertex_descriptor vertex_descriptor_t;
 typedef typename graph_traits<DiGraph>::edge_descriptor edge_descriptor_t;
 
@@ -125,7 +128,7 @@ public:
             {
                 edge_descriptor_t e = *out_i;
                 vertex_descriptor_t child_v = target(e, g);
-                g[child_v].rt2base = g[v].rt2base * g[e].trans;
+                g[child_v]->rt2base = g[v]->rt2base * g[e]->trans;
 
                 // std::cout<<g[*out_i].name<<endl;
                 // std::cout<<"e"<<endl<<g[e].name<<endl<<g[e].trans.matrix()<<endl;
@@ -140,16 +143,14 @@ public:
         return true;
     }
 
-    Frame* getFrame_p(const string frameName)
+    pFrame_t getFrame_p(const string frameName)
     {
-        vertex_descriptor_t v = Vmap[frameName];
-        return &g[v];
+        return g[Vmap[frameName]];
     }
 
-    TF* getTF_p(const string tfName)
+    pTF_t getTF_p(const string tfName)
     {
-        edge_descriptor_t e = Emap[tfName];
-        return &g[e];
+        return g[Emap[tfName]];
     }
 
     // // todo

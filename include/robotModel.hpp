@@ -9,6 +9,10 @@ namespace RobotModel
 
 using namespace std;
 
+
+typedef std::shared_ptr<Link>  pLink_t;
+typedef std::shared_ptr<Joint>  pJoint_t;
+
 class RobotModel
 {
 
@@ -22,6 +26,7 @@ public:
     map<string, Link> LinkMap;
     map<string, Joint_Link_pair> ParentMap;
     map<string, vector<Joint_Link_pair>> ChildMap;
+
 
     bool setJointValue(string jName, double jValue, bool updateTree);
     bool updateJointsValue( map<string, double> jvMap, bool updateTree );

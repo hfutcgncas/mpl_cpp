@@ -42,16 +42,16 @@ void RobotModel::build_frame_Tree()
 {
 //  template<class T, class U>
 //     shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const & r); // never throws
+    
 
     for (auto item : LinkMap)
     {
         // pFrame_t pframe = dynamic_pointer_cast<pFrame_t>(shared_ptr<Link>(const & item.second));
-        Frame frame = item.second;
-   
-        vertex_descriptor_t v = boost::add_vertex(frame, tf_tree.g);
-        tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));
-
-      
+        pLink_t plink(new Link());
+        *plink = item.second;
+        pFrame_t pframe = dynamic_pointer_cast<Frame>(plink);
+        vertex_descriptor_t v = boost::add_vertex(pframe, tf_tree.g);
+        tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));      
     }
 
     for (auto item : JointMap)
@@ -60,10 +60,11 @@ void RobotModel::build_frame_Tree()
         auto v2 = tf_tree.Vmap[item.second.child];
 
         // Add edges
-        TF tf = item.second;
-        // a.name = "asd";
+       
+        pJoint_t pJoint(new Joint(item.second));
+        pTF_t pframe = dynamic_pointer_cast<TF>(pJoint);
         std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, tf_tree.g);
-        tf_tree.g[e.first] = tf;
+        tf_tree.g[e.first] = pframe;
         tf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
 
 
@@ -75,15 +76,16 @@ void RobotModel::build_frame_Tree()
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
 {
-    TF* ptf = tf_tree.getTF_p(jName);
-    Joint* pj = &JointMap[jName];
+    pTF_t ptf = tf_tree.getTF_p(jName); 
+    pJoint_t pj = std::dynamic_pointer_cast<Joint, TF>(ptf) ; 
+    assert(pj != NULL);
     pj->updateTf(jValue);
-    ptf->trans = pj->trans;
 
     if(updateTree)
     {
         tf_tree.updateFtame_trans();
     }
+    return true;
 }
 
 bool RobotModel::updateJointsValue( map<string, double> jvMap, bool updateTree )
