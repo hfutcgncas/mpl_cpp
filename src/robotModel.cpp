@@ -40,9 +40,8 @@ RobotModel::RobotModel(YAML::Node node)
 
 void RobotModel::build_frame_Tree()
 {
-//  template<class T, class U>
-//     shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const & r); // never throws
-    
+    //  template<class T, class U>
+    //     shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const & r); // never throws
 
     for (auto item : LinkMap)
     {
@@ -51,7 +50,7 @@ void RobotModel::build_frame_Tree()
         *plink = item.second;
         pFrame_t pframe = dynamic_pointer_cast<Frame>(plink);
         vertex_descriptor_t v = boost::add_vertex(pframe, tf_tree.g);
-        tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));      
+        tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));
     }
 
     for (auto item : JointMap)
@@ -60,14 +59,12 @@ void RobotModel::build_frame_Tree()
         auto v2 = tf_tree.Vmap[item.second.child];
 
         // Add edges
-       
+
         pJoint_t pJoint(new Joint(item.second));
         pTF_t pframe = dynamic_pointer_cast<TF>(pJoint);
         std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, tf_tree.g);
         tf_tree.g[e.first] = pframe;
         tf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
-
-
     }
 
     tf_tree.updateTFOrder();
@@ -76,34 +73,33 @@ void RobotModel::build_frame_Tree()
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
 {
-    pTF_t ptf = tf_tree.getTF_p(jName); 
-    pJoint_t pj = std::dynamic_pointer_cast<Joint, TF>(ptf) ; 
+    pTF_t ptf = tf_tree.getTF_p(jName);
+    pJoint_t pj = std::dynamic_pointer_cast<Joint, TF>(ptf);
     assert(pj != NULL);
     pj->updateTf(jValue);
 
-    if(updateTree)
+    if (updateTree)
     {
         tf_tree.updateFtame_trans();
     }
     return true;
 }
 
-bool RobotModel::updateJointsValue( map<string, double> jvMap, bool updateTree )
+bool RobotModel::updateJointsValue(map<string, double> jvMap, bool updateTree)
 {
     // for(boost::tie(out_i, out_end) = out_edges(v, g);  )
     string name;
     float value;
-    for(auto jv : jvMap)
+    for (auto jv : jvMap)
     {
         boost::tie(name, value) = jv;
         setJointValue(name, value, false);
     }
 
-    if(updateTree)
+    if (updateTree)
     {
         tf_tree.updateFtame_trans();
     }
 }
-
 
 } // namespace RobotModel

@@ -44,15 +44,14 @@ template <class T>
 inline T norm(vector<T> v)
 {
     T rt = 0;
-    for(auto item : v)
+    for (auto item : v)
     {
         rt += (item * item);
     }
     return sqrt(rt);
 }
 
-
-class Joint: public tf_Graph::TF
+class Joint : public tf_Graph::TF
 {
 public:
     // string name;
@@ -69,17 +68,17 @@ public:
     float limit_upper;
 
     double value;
-    
+
     Eigen::Isometry3d trans_ori;
 
     void updateTf(double value)
     {
-        if( type == "revolute" or type == "continuous")
+        if (type == "revolute" or type == "continuous")
         {
-            Eigen::AngleAxisd dr_v( value, Eigen::Vector3d ( axis[0],axis[1],axis[2] ) ); 
-            Eigen::Isometry3d dr=Eigen::Isometry3d::Identity();
+            Eigen::AngleAxisd dr_v(value, Eigen::Vector3d(axis[0], axis[1], axis[2]));
+            Eigen::Isometry3d dr = Eigen::Isometry3d::Identity();
             dr.rotate(dr_v);
-            trans = trans_ori* dr;
+            trans = trans_ori * dr;
         }
     }
 
@@ -113,11 +112,11 @@ public:
 
         // 参考视觉slam14 https://www.cnblogs.com/ChrisCoder/p/10083110.html
         float ori_value = norm<float>(origin_rpy);
-        
-        Eigen::AngleAxisd rotation_vector( ori_value, Eigen::Vector3d ( origin_rpy[0],origin_rpy[1],origin_rpy[2] )   ); 
+
+        Eigen::AngleAxisd rotation_vector(ori_value, Eigen::Vector3d(origin_rpy[0], origin_rpy[1], origin_rpy[2]));
         trans_ori = Eigen::Isometry3d::Identity();
         trans_ori.rotate(rotation_vector);
-        trans_ori.pretranslate(Eigen::Vector3d ( origin_xyz[0],origin_xyz[1],origin_xyz[2] ) );
+        trans_ori.pretranslate(Eigen::Vector3d(origin_xyz[0], origin_xyz[1], origin_xyz[2]));
         trans = trans_ori;
 
         // std::cout<< "init edge: "<<name<<":"<<std::endl;
@@ -147,7 +146,7 @@ public:
         trans_ori = src.trans_ori;
     }
 
-    Joint():tf_Graph::TF() 
+    Joint() : tf_Graph::TF()
     {
         trans_ori = Eigen::Isometry3d::Identity();
     }
@@ -157,10 +156,10 @@ public:
     }
 };
 
-class Link:public tf_Graph::Frame
+class Link : public tf_Graph::Frame
 {
 public:
-    Link():tf_Graph::Frame() {}
+    Link() : tf_Graph::Frame() {}
 
     // Link(string Name) : name(Name), rt2base(Eigen::Isometry3d::Identity())
     // {
@@ -198,10 +197,6 @@ public:
         link_name = v[1];
     }
 };
-
-
-
-
 
 } // namespace RobotModel
 

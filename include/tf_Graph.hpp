@@ -37,7 +37,7 @@ public:
     Eigen::Isometry3d rt2base;
     string name;
 
-    Frame() 
+    Frame()
     {
         rt2base = Eigen::Isometry3d::Identity();
     }
@@ -63,7 +63,7 @@ public:
     string parent;
     string child;
 
-    TF() 
+    TF()
     {
         trans = Eigen::Isometry3d::Identity();
     }
@@ -80,9 +80,8 @@ public:
     virtual ~TF() {}
 };
 
-
-typedef std::shared_ptr<Frame>  pFrame_t;
-typedef std::shared_ptr<TF>  pTF_t;
+typedef std::shared_ptr<Frame> pFrame_t;
+typedef std::shared_ptr<TF> pTF_t;
 
 typedef adjacency_list<listS, vecS, directedS, pFrame_t, pTF_t> DiGraph;
 typedef typename graph_traits<DiGraph>::vertex_descriptor vertex_descriptor_t;
@@ -100,8 +99,8 @@ public:
     map<string, vertex_descriptor_t> Vmap;
     map<string, edge_descriptor_t> Emap;
     TFOrder_t TFOrder;
-    
-    TFOrder_t* updateTFOrder()
+
+    TFOrder_t *updateTFOrder()
     {
         TFOrder.clear();
         topological_sort(g, std::front_inserter(TFOrder));
@@ -110,21 +109,21 @@ public:
 
     bool updateFtame_trans()
     {
-        if(TFOrder.size() == 0)
+        if (TFOrder.size() == 0)
         {
             return false;
         }
-        
+
         out_edge_iterator_t out_i, out_end;
-     
-        for( vertex_descriptor_t v : TFOrder )
+
+        for (vertex_descriptor_t v : TFOrder)
         {
             // std::cout<<"trace: "<<v<<" "<<g[v].name <<endl;
             // std::cout<<g[v].rt2base.matrix()<<endl;
 
-            boost::tie(out_i, out_end) = out_edges(v, g); 
+            boost::tie(out_i, out_end) = out_edges(v, g);
 
-            for( ;out_i != out_end; out_i++) 
+            for (; out_i != out_end; out_i++)
             {
                 edge_descriptor_t e = *out_i;
                 vertex_descriptor_t child_v = target(e, g);
@@ -137,8 +136,6 @@ public:
             }
             // std::cout<<"================"<<endl;
         }
-
-        
 
         return true;
     }
