@@ -89,11 +89,11 @@ bool RobotModel::updateJointsValue( map<string, double> jvMap )
         TF* ptf = tf_tree.getTF_p(name);
         Joint* pj = &JointMap[name];
 
-        cout<< pj->trans.matrix()<<endl;
+        // cout<< pj->trans.matrix()<<endl;
         pj->updateTf(value);
-        cout<< pj->trans.matrix()<<endl;
+        // cout<< pj->trans.matrix()<<endl;
         ptf->trans = pj->trans;
-        cout<< "  ====================  "<<endl;
+        // cout<< "  ====================  "<<endl;
     }
 
     tf_tree.updateFtame_trans();
