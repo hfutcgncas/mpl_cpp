@@ -73,12 +73,20 @@ void RobotModel::build_frame_Tree()
     tf_tree.updateFtame_trans();
 }
 
-bool RobotModel::setJointValue(string jName, double jValue)
+bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
 {
+    TF* ptf = tf_tree.getTF_p(jName);
+    Joint* pj = &JointMap[jName];
+    pj->updateTf(jValue);
+    ptf->trans = pj->trans;
 
+    if(updateTree)
+    {
+        tf_tree.updateFtame_trans();
+    }
 }
 
-bool RobotModel::updateJointsValue( map<string, double> jvMap )
+bool RobotModel::updateJointsValue( map<string, double> jvMap, bool updateTree )
 {
     // for(boost::tie(out_i, out_end) = out_edges(v, g);  )
     string name;
@@ -86,17 +94,13 @@ bool RobotModel::updateJointsValue( map<string, double> jvMap )
     for(auto jv : jvMap)
     {
         boost::tie(name, value) = jv;
-        TF* ptf = tf_tree.getTF_p(name);
-        Joint* pj = &JointMap[name];
-
-        // cout<< pj->trans.matrix()<<endl;
-        pj->updateTf(value);
-        // cout<< pj->trans.matrix()<<endl;
-        ptf->trans = pj->trans;
-        // cout<< "  ====================  "<<endl;
+        setJointValue(name, value, false);
     }
 
-    tf_tree.updateFtame_trans();
+    if(updateTree)
+    {
+        tf_tree.updateFtame_trans();
+    }
 }
 
 
