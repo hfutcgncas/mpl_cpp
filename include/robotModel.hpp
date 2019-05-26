@@ -23,6 +23,10 @@ public:
     map<string, Joint_Link_pair> ParentMap;
     map<string, vector<Joint_Link_pair>> ChildMap;
 
+    bool setJointValue(string jName, double jValue);
+    bool updateJointsValue( map<string, double> jvMap );
+    
+
 public:
     tf_Graph::TF_Graph tf_tree;
 };

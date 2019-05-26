@@ -37,7 +37,10 @@ public:
     Eigen::Isometry3d rt2base;
     string name;
 
-    Frame() {}
+    Frame() 
+    {
+        rt2base = Eigen::Isometry3d::Identity();
+    }
     Frame(const Frame &src) : rt2base(src.rt2base), name(src.name)
     {
     }
@@ -57,7 +60,10 @@ public:
     string parent;
     string child;
 
-    TF() {}
+    TF() 
+    {
+        trans = Eigen::Isometry3d::Identity();
+    }
     TF(const TF &src) : trans(src.trans), name(src.name)
     {
     }
@@ -69,11 +75,19 @@ public:
     }
 };
 
+
+// typedef std::shared_ptr<Frame>  pFrame_t;
+// typedef std::shared_ptr<TF>  pTF_t;
+
+
+
 typedef adjacency_list<listS, vecS, directedS, Frame, TF> DiGraph;
 typedef typename graph_traits<DiGraph>::vertex_descriptor vertex_descriptor_t;
 typedef typename graph_traits<DiGraph>::edge_descriptor edge_descriptor_t;
 
 typedef std::list<vertex_descriptor_t> TFOrder_t;
+typedef typename graph_traits<DiGraph>::out_edge_iterator out_edge_iterator_t;
+typedef typename graph_traits<DiGraph>::in_edge_iterator in_edge_iterator_t;
 
 class TF_Graph
 {
@@ -98,21 +112,41 @@ public:
             return false;
         }
         
-        for( auto v : TFOrder )
+        out_edge_iterator_t out_i, out_end;
+     
+        for( vertex_descriptor_t v : TFOrder )
         {
-            std::cout<<g[v].name <<endl;
+            // std::cout<<"trace: "<<v<<" "<<g[v].name <<endl;
+            // std::cout<<g[v].rt2base.matrix()<<endl;
+
+            boost::tie(out_i, out_end) = out_edges(v, g); 
+
+            for( ;out_i != out_end; out_i++) 
+            {
+                edge_descriptor_t e = *out_i;
+                vertex_descriptor_t child_v = target(e, g);
+                g[child_v].rt2base = g[v].rt2base * g[e].trans;
+
+                // std::cout<<g[*out_i].name<<endl;
+                // std::cout<<"e"<<endl<<g[e].name<<endl<<g[e].trans.matrix()<<endl;
+                // std::cout<<g[child_v].name<<endl;
+                // std::cout<<"cv"<<g[child_v].rt2base.matrix()<<endl;
+            }
+            // std::cout<<"================"<<endl;
         }
+
+        
 
         return true;
     }
 
-    Frame *getFrame_p(const string frameName)
+    Frame* getFrame_p(const string frameName)
     {
         vertex_descriptor_t v = Vmap[frameName];
         return &g[v];
     }
 
-    TF *getTF_p(const string tfName)
+    TF* getTF_p(const string tfName)
     {
         edge_descriptor_t e = Emap[tfName];
         return &g[e];

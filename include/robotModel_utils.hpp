@@ -48,7 +48,7 @@ inline T norm(vector<T> v)
     {
         rt += (item * item);
     }
-    return rt;
+    return sqrt(rt);
 }
 
 
@@ -71,13 +71,13 @@ public:
     double value;
     
     Eigen::Isometry3d trans_ori;
- 
+
     void updateTf(double value)
     {
         if( type == "revolute" or type == "continuous")
         {
             Eigen::AngleAxisd dr_v( value, Eigen::Vector3d ( axis[0],axis[1],axis[2] ) ); 
-            Eigen::Isometry3d dr;
+            Eigen::Isometry3d dr=Eigen::Isometry3d::Identity();
             dr.rotate(dr_v);
             trans = trans_ori* dr;
         }
@@ -113,11 +113,18 @@ public:
 
         // 参考视觉slam14 https://www.cnblogs.com/ChrisCoder/p/10083110.html
         float ori_value = norm<float>(origin_rpy);
-        Eigen::AngleAxisd rotation_vector( ori_value, Eigen::Vector3d ( origin_rpy[0]/ori_value,origin_rpy[1]/ori_value,origin_rpy[2]/ori_value )   ); 
+        
+        Eigen::AngleAxisd rotation_vector( ori_value, Eigen::Vector3d ( origin_rpy[0],origin_rpy[1],origin_rpy[2] )   ); 
+        trans_ori = Eigen::Isometry3d::Identity();
         trans_ori.rotate(rotation_vector);
         trans_ori.pretranslate(Eigen::Vector3d ( origin_xyz[0],origin_xyz[1],origin_xyz[2] ) );
         trans = trans_ori;
 
+        // std::cout<< "init edge: "<<name<<":"<<std::endl;
+        // std::cout<< trans_ori.matrix() <<  std::endl;
+        // std::cout<< origin_xyz[0] <<" "<< origin_xyz[1]<<" "<<origin_xyz[2]<<" " <<  std::endl;
+
+        // std::cout<< "xxxxxxxxxxxxxxxxxxxxxxxxx" <<  std::endl;
     }
 
     Joint &operator=(const Joint &src)
@@ -140,7 +147,10 @@ public:
         trans_ori = src.trans_ori;
     }
 
-    Joint() {}
+    Joint():tf_Graph::TF() 
+    {
+        trans_ori = Eigen::Isometry3d::Identity();
+    }
     Joint(const Joint &src)
     {
         *this = src;
@@ -150,7 +160,7 @@ public:
 class Link:public tf_Graph::Frame
 {
 public:
-    Link() {}
+    Link():tf_Graph::Frame() {}
 
     // Link(string Name) : name(Name), rt2base(Eigen::Isometry3d::Identity())
     // {

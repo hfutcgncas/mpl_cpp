@@ -5,8 +5,9 @@
 #include <vector>
 
 #include "yaml-cpp/yaml.h"
-#include"robotModel.hpp"
+#include "robotModel.hpp"
 
+#include <boost/graph/graph_traits.hpp>
 
 int main()
 {
@@ -15,17 +16,18 @@ int main()
 
     RobotModel::RobotModel robot(robot_dict);
 
-    std::cout<< robot.tf_tree.g.m_vertices.size()<< std::endl;
-    std::cout<< robot.LinkMap.size()<< std::endl;
 
     std::cout<< robot.tf_tree.getFrame_p("tool0")->rt2base.matrix()<< std::endl;
-    // std::cout<< robot.tf_Graph.getLink_p("link_3")->name<<std::endl ;
 
-    // RobotModel::Joint* j =  robot.tf_Graph.getJoint_p("joint_1");
-    // j->axis[2] = 100;
+    std::map<std::string, double> jvm;
+    jvm.insert( std::pair<std::string, double>("joint_1", 1));
+    jvm.insert( std::pair<std::string, double>("joint_3", -2.02));
+    jvm.insert( std::pair<std::string, double>("joint_5", 2.01));
+    robot.updateJointsValue(jvm);
 
-    // std::cout<< robot.tf_Graph.getJoint_p("joint_1")->axis[2]<<std::endl ;
+    std::cout<< robot.tf_tree.getFrame_p("tool0")->rt2base.matrix()<< std::endl;
 
+    
 
     return 0;
 }

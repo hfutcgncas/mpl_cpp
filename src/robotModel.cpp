@@ -40,13 +40,18 @@ RobotModel::RobotModel(YAML::Node node)
 
 void RobotModel::build_frame_Tree()
 {
-    
+//  template<class T, class U>
+//     shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const & r); // never throws
+
     for (auto item : LinkMap)
     {
-        vertex_descriptor_t v = boost::add_vertex( *dynamic_cast<Frame*>(&item.second), tf_tree.g);
+        // pFrame_t pframe = dynamic_pointer_cast<pFrame_t>(shared_ptr<Link>(const & item.second));
+        Frame frame = item.second;
+   
+        vertex_descriptor_t v = boost::add_vertex(frame, tf_tree.g);
         tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));
-       
-        // std::cout<<tf_tree.g[v].name <<endl;
+
+      
     }
 
     for (auto item : JointMap)
@@ -55,16 +60,44 @@ void RobotModel::build_frame_Tree()
         auto v2 = tf_tree.Vmap[item.second.child];
 
         // Add edges
-
+        TF tf = item.second;
+        // a.name = "asd";
         std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, tf_tree.g);
-        tf_tree.g[e.first] =  *dynamic_cast<TF*>(&item.second);
+        tf_tree.g[e.first] = tf;
         tf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
+
+
     }
-    
+
     tf_tree.updateTFOrder();
     tf_tree.updateFtame_trans();
+}
 
+bool RobotModel::setJointValue(string jName, double jValue)
+{
 
 }
+
+bool RobotModel::updateJointsValue( map<string, double> jvMap )
+{
+    // for(boost::tie(out_i, out_end) = out_edges(v, g);  )
+    string name;
+    float value;
+    for(auto jv : jvMap)
+    {
+        boost::tie(name, value) = jv;
+        TF* ptf = tf_tree.getTF_p(name);
+        Joint* pj = &JointMap[name];
+
+        cout<< pj->trans.matrix()<<endl;
+        pj->updateTf(value);
+        cout<< pj->trans.matrix()<<endl;
+        ptf->trans = pj->trans;
+        cout<< "  ====================  "<<endl;
+    }
+
+    tf_tree.updateFtame_trans();
+}
+
 
 } // namespace RobotModel
