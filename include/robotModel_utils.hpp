@@ -185,6 +185,9 @@ public:
     }
 };
 
+typedef std::shared_ptr<Link>  pLink_t;
+typedef std::shared_ptr<Joint>  pJoint_t;
+
 class Joint_Link_pair
 {
 public:
@@ -198,10 +201,6 @@ public:
         link_name = v[1];
     }
 };
-
-
-
-
 
 } // namespace RobotModel
 

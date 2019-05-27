@@ -9,9 +9,8 @@ namespace RobotModel
 
 using namespace std;
 
-
-typedef std::shared_ptr<Link>  pLink_t;
-typedef std::shared_ptr<Joint>  pJoint_t;
+void operator<<(pLink_t &plink, const YAML::Node &node);
+void operator<<(pJoint_t &pjoint, const YAML::Node &node);
 
 class RobotModel
 {
@@ -22,8 +21,8 @@ public:
     void build_frame_Tree();
 
     vector<string> ControlableJoints;
-    map<string, Joint> JointMap;
-    map<string, Link> LinkMap;
+    map<string, pJoint_t> JointMap;
+    map<string, pLink_t> LinkMap;
     map<string, Joint_Link_pair> ParentMap;
     map<string, vector<Joint_Link_pair>> ChildMap;
 

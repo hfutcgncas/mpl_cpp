@@ -26,12 +26,25 @@ void operator<<(vector<Joint_Link_pair> &jlSet, const YAML::Node &node)
     }
 }
 
+void operator<<(pLink_t &plink, const YAML::Node &node)
+{
+    plink = std::make_shared<Link>();
+    *plink << node; 
+}
+
+void operator<<(pJoint_t &pjoint, const YAML::Node &node)
+{
+    pjoint = std::make_shared<Joint>();
+    *pjoint << node; 
+}
+
+
 RobotModel::RobotModel(YAML::Node node)
 {
     // ControlableJoints
     ControlableJoints = parseYAMLList<string>(node["ControlableJoints"]);
-    JointMap = parseYAMLMap<Joint>(node["joint_map"]);
-    LinkMap = parseYAMLMap<Link>(node["link_map"]);
+    JointMap = parseYAMLMap<pJoint_t>(node["joint_map"]);
+    LinkMap = parseYAMLMap<pLink_t>(node["link_map"]);
     ParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
     ChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
 
@@ -40,34 +53,21 @@ RobotModel::RobotModel(YAML::Node node)
 
 void RobotModel::build_frame_Tree()
 {
-//  template<class T, class U>
-//     shared_ptr<T> dynamic_pointer_cast(shared_ptr<U> const & r); // never throws
-    
-
+    // Add links
     for (auto item : LinkMap)
     {
-        // pFrame_t pframe = dynamic_pointer_cast<pFrame_t>(shared_ptr<Link>(const & item.second));
-        pLink_t plink(new Link());
-        *plink = item.second;
-        pFrame_t pframe = dynamic_pointer_cast<Frame>(plink);
+        pFrame_t pframe = dynamic_pointer_cast<Frame>(item.second);
         vertex_descriptor_t v = boost::add_vertex(pframe, tf_tree.g);
         tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));      
     }
-
+    // Add edges
     for (auto item : JointMap)
     {
-        auto v1 = tf_tree.Vmap[item.second.parent];
-        auto v2 = tf_tree.Vmap[item.second.child];
-
-        // Add edges
-       
-        pJoint_t pJoint(new Joint(item.second));
-        pTF_t pframe = dynamic_pointer_cast<TF>(pJoint);
-        std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, tf_tree.g);
-        tf_tree.g[e.first] = pframe;
+        auto v1 = tf_tree.Vmap[item.second->parent];
+        auto v2 = tf_tree.Vmap[item.second->child];
+        pTF_t pframe = dynamic_pointer_cast<TF>(item.second);
+        std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, pframe, tf_tree.g);
         tf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
-
-
     }
 
     tf_tree.updateTFOrder();
