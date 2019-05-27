@@ -152,6 +152,17 @@ public:
         return g[Emap[tfName]];
     }
 
+    string getRootFrameName()
+    {
+        updateTFOrder();
+        assert(~TFOrder.empty());
+
+        for( vertex_descriptor_t v : TFOrder )
+        {
+            // return the first item
+            return g[v]->name;
+        }
+    }
     // // todo
     // bool add_TF(Joint j, Link l)
     // {

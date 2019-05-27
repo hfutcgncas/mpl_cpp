@@ -120,4 +120,10 @@ vector<string> RobotModel::getControlableJoints()
 }
 
 
+std::string RobotModel::getRootName()
+{
+    return mTf_tree.getRootFrameName();
+}
+
+
 } // namespace RobotModel

@@ -42,6 +42,10 @@ TEST_F(RobotModelTest, getControlableJoints)
     EXPECT_EQ(cj, gt);
 }
 
+TEST_F(RobotModelTest, getRootName)
+{
+    EXPECT_EQ(pRobot->getRootName(), "base_link");
+}
 
 int main(int argc,char **argv)
 {

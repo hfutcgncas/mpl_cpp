@@ -30,10 +30,12 @@ public:
     bool updateJointsValue(map<string, double> jvMap, bool updateTree);
 
     vector<string> getControlableJoints();
+    std::string getRootName();
+
     // TO DO
     bool addLink();
     bool SwitchLinkParent();
-    std::string getRoot();
+
   
 
 public:

@@ -30,6 +30,9 @@ int main()
     {
         std::cout<< i << std::endl;
     }
+
+    std::cout<< robot.getRootName()<< std::endl;
+
     
     return 0;
 }
