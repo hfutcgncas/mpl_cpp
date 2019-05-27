@@ -119,4 +119,15 @@ vector<string> RobotModel::getControlableJoints()
     return out;
 }
 
+
+pLink_t RobotModel::getLink_p(string name)
+{
+    return  dynamic_pointer_cast<Link>(mTf_tree.getFrame_p(name));
+}
+
+// bool RobotModel::rmLink(string name)
+// {
+//     mTf_tree.g.remove_v
+// }
+
 } // namespace RobotModel

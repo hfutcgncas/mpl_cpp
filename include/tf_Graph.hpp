@@ -75,6 +75,7 @@ public:
     {
         name = src.name;
         trans = src.trans;
+        return *this;
     }
 
     virtual ~TF() {}
@@ -83,7 +84,9 @@ public:
 typedef std::shared_ptr<Frame> pFrame_t;
 typedef std::shared_ptr<TF> pTF_t;
 
-typedef adjacency_list<listS, vecS, directedS, pFrame_t, pTF_t> DiGraph;
+// typedef adjacency_list<listS, vecS, directedS, pFrame_t, pTF_t> DiGraph;
+typedef adjacency_list<listS, vecS, bidirectionalS, pFrame_t, pTF_t> DiGraph;
+
 typedef typename graph_traits<DiGraph>::vertex_descriptor vertex_descriptor_t;
 typedef typename graph_traits<DiGraph>::edge_descriptor edge_descriptor_t;
 
@@ -148,6 +151,57 @@ public:
     {
         return g[Emap[tfName]];
     }
+
+    // 判断是否是叶子节点
+    bool isLeafFrame(const string frameName)
+    {
+        vertex_descriptor_t v = Vmap[frameName];
+        size_t a = out_degree(v, g);
+        return (a==0);
+    }
+
+    // 删除frame。只删除叶子节点，对非叶子节点无操作
+    bool rmFrame(const string frameName)
+    {
+        vertex_descriptor_t v = Vmap[frameName];
+        if(isLeafFrame(frameName))
+        {
+            clear_vertex(v, g);
+            remove_vertex(v, g);
+            Vmap.erase(frameName);
+            return true;
+        }
+        else
+        {
+            return false;
+        }        
+    }
+
+    // 删除frame及其后续所有frame
+    bool rmFrame_recursive(const string frameName)
+    {
+        if(rmFrame(frameName))
+        {
+            return true;
+        }
+        else
+        {
+            vertex_descriptor_t v = Vmap[frameName];
+            out_edge_iterator_t out_i, out_end;
+            boost::tie(out_i, out_end) = out_edges(v, g); 
+            for (; out_i != out_end; out_i++)
+            {
+                edge_descriptor_t e = *out_i;
+                vertex_descriptor_t child_v = target(e, g);
+                rmFrame_recursive( g[child_v]->name );
+            }
+            return true;
+        }
+    }
+
+
+
+
 
     // // todo
     // bool add_TF(Joint j, Link l)

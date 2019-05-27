@@ -30,10 +30,18 @@ public:
     bool updateJointsValue(map<string, double> jvMap, bool updateTree);
 
     vector<string> getControlableJoints();
+    
+    pLink_t getLink_p(string name);
+    
+
+
     // TO DO
     bool addLink();
+    
+    bool getJoint();
     bool SwitchLinkParent();
     std::string getRoot();
+    bool rmLink(string name); //只允许删除叶子节点的link
   
 
 public:

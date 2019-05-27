@@ -43,8 +43,9 @@ TEST_F(RobotModelTest, getControlableJoints)
 }
 
 
-int main(int argc,char **argv)
+TEST_F(RobotModelTest, getLink_p)
 {
-    testing::InitGoogleTest(&argc,argv);
-    return RUN_ALL_TESTS();
+    EXPECT_EQ( pRobot->getLink_p("tool0")->name, "tool0");
 }
+
+
