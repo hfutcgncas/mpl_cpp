@@ -42,11 +42,11 @@ void operator<<(pJoint_t &pjoint, const YAML::Node &node)
 RobotModel::RobotModel(YAML::Node node)
 {
     // ControlableJoints
-    ControlableJoints = parseYAMLList<string>(node["ControlableJoints"]);
-    JointMap = parseYAMLMap<pJoint_t>(node["joint_map"]);
-    LinkMap = parseYAMLMap<pLink_t>(node["link_map"]);
-    ParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
-    ChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
+    mControlableJoints = parseYAMLList<string>(node["ControlableJoints"]);
+    mJointMap = parseYAMLMap<pJoint_t>(node["joint_map"]);
+    mLinkMap = parseYAMLMap<pLink_t>(node["link_map"]);
+    mParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
+    mChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
 
     build_frame_Tree();
 }
@@ -54,36 +54,36 @@ RobotModel::RobotModel(YAML::Node node)
 void RobotModel::build_frame_Tree()
 {
     // Add links
-    for (auto item : LinkMap)
+    for (auto item : mLinkMap)
     {
         pFrame_t pframe = dynamic_pointer_cast<Frame>(item.second);
-        vertex_descriptor_t v = boost::add_vertex(pframe, tf_tree.g);
-        tf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));      
+        vertex_descriptor_t v = boost::add_vertex(pframe, mTf_tree.g);
+        mTf_tree.Vmap.insert(pair<string, vertex_descriptor_t>(item.first, v));      
     }
     // Add edges
-    for (auto item : JointMap)
+    for (auto item : mJointMap)
     {
-        auto v1 = tf_tree.Vmap[item.second->parent];
-        auto v2 = tf_tree.Vmap[item.second->child];
+        auto v1 = mTf_tree.Vmap[item.second->parent];
+        auto v2 = mTf_tree.Vmap[item.second->child];
         pTF_t pframe = dynamic_pointer_cast<TF>(item.second);
-        std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, pframe, tf_tree.g);
-        tf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
+        std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, pframe, mTf_tree.g);
+        mTf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
     }
 
-    tf_tree.updateTFOrder();
-    tf_tree.updateFtame_trans();
+    mTf_tree.updateTFOrder();
+    mTf_tree.updateFtame_trans();
 }
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
 {
-    pTF_t ptf = tf_tree.getTF_p(jName); 
+    pTF_t ptf = mTf_tree.getTF_p(jName); 
     pJoint_t pj = std::dynamic_pointer_cast<Joint, TF>(ptf) ; 
     assert(pj != NULL);
     pj->updateTf(jValue);
 
     if(updateTree)
     {
-        tf_tree.updateFtame_trans();
+        mTf_tree.updateFtame_trans();
     }
     return true;
 }
@@ -101,8 +101,22 @@ bool RobotModel::updateJointsValue( map<string, double> jvMap, bool updateTree )
 
     if(updateTree)
     {
-        tf_tree.updateFtame_trans();
+        mTf_tree.updateFtame_trans();
     }
+}
+
+
+vector<string> RobotModel::getControlableJoints()
+{
+    vector<string> out;
+    for(auto item : mJointMap)
+    {
+        if( item.second->type != "fixed")
+        {
+            out.push_back(item.first);
+        }
+    }
+    return out;
 }
 
 

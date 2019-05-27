@@ -14,25 +14,30 @@ void operator<<(pJoint_t &pjoint, const YAML::Node &node);
 
 class RobotModel
 {
+private:
+    vector<string> mControlableJoints;
+    map<string, pJoint_t> mJointMap;
+    map<string, pLink_t> mLinkMap;
+    map<string, Joint_Link_pair> mParentMap;
+    map<string, vector<Joint_Link_pair>> mChildMap;
 
 public:
     RobotModel();
     RobotModel(YAML::Node node);
+
     void build_frame_Tree();
-
-    vector<string> ControlableJoints;
-    map<string, pJoint_t> JointMap;
-    map<string, pLink_t> LinkMap;
-    map<string, Joint_Link_pair> ParentMap;
-    map<string, vector<Joint_Link_pair>> ChildMap;
-
-
     bool setJointValue(string jName, double jValue, bool updateTree);
-    bool updateJointsValue( map<string, double> jvMap, bool updateTree );
-    
+    bool updateJointsValue(map<string, double> jvMap, bool updateTree);
+
+    vector<string> getControlableJoints();
+    // TO DO
+    bool addLink();
+    bool SwitchLinkParent();
+    std::string getRoot();
+  
 
 public:
-    tf_Graph::TF_Graph tf_tree;
+    tf_Graph::TF_Graph mTf_tree;
 };
 
 } // namespace RobotModel

@@ -99,6 +99,8 @@ public:
     DiGraph g;
     map<string, vertex_descriptor_t> Vmap;
     map<string, edge_descriptor_t> Emap;
+
+
     TFOrder_t TFOrder;
     
     TFOrder_t* updateTFOrder()
@@ -119,9 +121,6 @@ public:
      
         for( vertex_descriptor_t v : TFOrder )
         {
-            // std::cout<<"trace: "<<v<<" "<<g[v].name <<endl;
-            // std::cout<<g[v].rt2base.matrix()<<endl;
-
             boost::tie(out_i, out_end) = out_edges(v, g); 
 
             for( ;out_i != out_end; out_i++) 
