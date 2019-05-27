@@ -164,11 +164,24 @@ public:
     bool rmFrame(const string frameName)
     {
         vertex_descriptor_t v = Vmap[frameName];
+        in_edge_iterator_t in_i, in_end;
         if(isLeafFrame(frameName))
         {
+            
+
+            boost::tie(in_i, in_end) = in_edges(v, g); 
+            for (; in_i != in_end; in_i++)
+            {
+                // edge_descriptor_t e = *in_i;
+                // Emap.erase( g[e]->name ); 
+                remove_edge(*in_i, g);
+            }
+            
+            Vmap.erase(frameName);
             clear_vertex(v, g);
             remove_vertex(v, g);
-            Vmap.erase(frameName);
+            
+            std::cout<<"xxx+++"<<frameName<<std::endl;
             return true;
         }
         else
@@ -180,21 +193,38 @@ public:
     // 删除frame及其后续所有frame
     bool rmFrame_recursive(const string frameName)
     {
+        
+        std::cout<<"xxx"<<frameName<<std::endl;
         if(rmFrame(frameName))
         {
+            std::cout<<"xxx000"<<frameName<<std::endl;
             return true;
         }
         else
         {
             vertex_descriptor_t v = Vmap[frameName];
+            vertex_descriptor_t child_v;
             out_edge_iterator_t out_i, out_end;
             boost::tie(out_i, out_end) = out_edges(v, g); 
-            for (; out_i != out_end; out_i++)
+            vector<string> child_v_name_list;
+            for (; out_i != out_end; ++out_i)
             {
-                edge_descriptor_t e = *out_i;
-                vertex_descriptor_t child_v = target(e, g);
-                rmFrame_recursive( g[child_v]->name );
+                child_v = target(*out_i, g);
+                child_v_name_list.push_back(g[child_v]->name);
+                // Emap.erase( g[*out_i]->name ); 
+                // remove_edge(out_i, g);
+                
+                // rmFrame(frameName);
             }
+            for(auto v_name : child_v_name_list)
+            {
+                std::cout<< v_name <<std::endl;
+                rmFrame_recursive(v_name);
+            }
+
+            std::cout<< isLeafFrame(frameName) <<std::endl;
+            bool f = rmFrame(frameName);
+            std::cout<<"xxx---"<<frameName<<f<<std::endl;
             return true;
         }
     }

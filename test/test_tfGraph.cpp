@@ -26,6 +26,41 @@ protected:
 
 TEST_F(TF_GraphTest, isLeafFrame)
 {
-    EXPECT_EQ(pTree->isLeafFrame("tool0"), true);
-    EXPECT_EQ(pTree->isLeafFrame("link_1"), false);
+    EXPECT_TRUE(pTree->isLeafFrame("tool0"));
+    EXPECT_FALSE(pTree->isLeafFrame("link_1"));
+}
+
+TEST_F(TF_GraphTest, rmFrame)
+{
+    EXPECT_FALSE(pTree->rmFrame("link_1"));
+    EXPECT_TRUE(pTree->rmFrame("tool0"));
+
+    bool flag = false;
+    for(auto item: pTree->Vmap )
+    {
+        EXPECT_NE(item.first, "tool0");
+        if(item.first == "link_1")
+        {
+            flag = true;
+        }
+    }
+    EXPECT_TRUE(flag);
+
+}
+
+TEST_F(TF_GraphTest, rmFrame_recursive)
+{
+    EXPECT_TRUE(pTree->rmFrame_recursive("link_1"));
+   
+    bool flag = false;
+    for(auto item: pTree->Vmap )
+    {
+        EXPECT_NE(item.first, "link_6");
+        EXPECT_NE(item.first, "link_2");
+        if(item.first == "base_link")
+        {
+            flag = true;
+        }
+    }
+    EXPECT_TRUE(flag);
 }

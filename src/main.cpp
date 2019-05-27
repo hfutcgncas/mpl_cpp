@@ -30,6 +30,8 @@ int main()
     {
         std::cout<< i << std::endl;
     }
+
+    robot.mTf_tree.rmFrame_recursive("link_6");
     
     return 0;
 }
