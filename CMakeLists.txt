@@ -23,7 +23,6 @@ link_directories( ${PROJECT_SOURCE_DIR}/Thirdparty/yaml-cpp/build # yaml-cpp
 
 #sources
 set(SRC  ${PROJECT_SOURCE_DIR}/src/main.cpp  ${PROJECT_SOURCE_DIR}/src/robotModel.cpp)
-# set(SRC_test  ${PROJECT_SOURCE_DIR}/src/main_test.cpp)
 
 #build so
 # add_library(plate_recognition SHARED ${SRC})
@@ -43,7 +42,11 @@ target_link_libraries(main  yaml-cpp)
 
 
 # set(EXECUTABLE_OUTPUT_PATH ../build/test)
-set(TEST_SRC  ${PROJECT_SOURCE_DIR}/test/test.cpp  )
+set(TEST_SRC  ${PROJECT_SOURCE_DIR}/test/test_main.cpp
+              ${PROJECT_SOURCE_DIR}/test/test_robotModel.cpp
+              ${PROJECT_SOURCE_DIR}/test/test_tfGraph.cpp
+              )
+
 ADD_EXECUTABLE(utest ${TEST_SRC} ${PROJECT_SOURCE_DIR}/src/robotModel.cpp)
 target_link_libraries(utest  yaml-cpp gtest gtest_main pthread)
 

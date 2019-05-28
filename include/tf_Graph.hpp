@@ -10,6 +10,8 @@
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/topological_sort.hpp>
 
+// #include <boost/graph/labeled_graph.hpp>   // 可以考虑采用
+
 // #include"robotModel_utils.hpp"
 
 #include "Eigen/Geometry"
@@ -37,7 +39,7 @@ public:
     Eigen::Isometry3d rt2base;
     string name;
 
-    Frame() 
+    Frame()
     {
         rt2base = Eigen::Isometry3d::Identity();
     }
@@ -63,7 +65,7 @@ public:
     string parent;
     string child;
 
-    TF() 
+    TF()
     {
         trans = Eigen::Isometry3d::Identity();
     }
@@ -75,16 +77,22 @@ public:
     {
         name = src.name;
         trans = src.trans;
+        return *this;
     }
 
     virtual ~TF() {}
 };
 
+typedef std::shared_ptr<Frame> pFrame_t;
+typedef std::shared_ptr<TF> pTF_t;
 
-typedef std::shared_ptr<Frame>  pFrame_t;
-typedef std::shared_ptr<TF>  pTF_t;
+// typedef adjacency_list<listS, vecS, directedS, pFrame_t, pTF_t> DiGraph;
 
-typedef adjacency_list<listS, vecS, directedS, pFrame_t, pTF_t> DiGraph;
+typedef adjacency_list<listS, vecS, bidirectionalS, pFrame_t, pTF_t> DiGraph;
+
+// typedef labeled_graph<DiGraph, std::string> LGraph;
+    
+
 typedef typename graph_traits<DiGraph>::vertex_descriptor vertex_descriptor_t;
 typedef typename graph_traits<DiGraph>::edge_descriptor edge_descriptor_t;
 
@@ -97,13 +105,14 @@ class TF_Graph
 
 public:
     DiGraph g;
+    // LGraph g;
     map<string, vertex_descriptor_t> Vmap;
     map<string, edge_descriptor_t> Emap;
 
 
     TFOrder_t TFOrder;
-    
-    TFOrder_t* updateTFOrder()
+
+    TFOrder_t *updateTFOrder()
     {
         TFOrder.clear();
         topological_sort(g, std::front_inserter(TFOrder));
@@ -112,18 +121,18 @@ public:
 
     bool updateFtame_trans()
     {
-        if(TFOrder.size() == 0)
+        if (TFOrder.size() == 0)
         {
             return false;
         }
-        
+
         out_edge_iterator_t out_i, out_end;
-     
-        for( vertex_descriptor_t v : TFOrder )
+
+        for (vertex_descriptor_t v : TFOrder)
         {
             boost::tie(out_i, out_end) = out_edges(v, g); 
 
-            for( ;out_i != out_end; out_i++) 
+            for (; out_i != out_end; out_i++)
             {
                 edge_descriptor_t e = *out_i;
                 vertex_descriptor_t child_v = target(e, g);
@@ -136,8 +145,6 @@ public:
             }
             // std::cout<<"================"<<endl;
         }
-
-        
 
         return true;
     }
@@ -163,6 +170,93 @@ public:
             return g[v]->name;
         }
     }
+    // 判断是否是叶子节点
+    bool isLeafFrame(const string frameName)
+    {
+        vertex_descriptor_t v = Vmap[frameName];
+        size_t a = out_degree(v, g);
+        return (a==0);
+    }
+
+    bool updateVEmap()
+    {
+        DiGraph::vertex_iterator vertexIt, vertexEnd;
+        out_edge_iterator_t out_i, out_end;
+            
+        Vmap.erase(Vmap.begin(),Vmap.end());
+        Emap.erase(Emap.begin(),Emap.end());
+        
+        tie(vertexIt, vertexEnd) = vertices(g);
+        for (; vertexIt != vertexEnd; ++vertexIt) 
+        { 
+            Vmap.insert(std::pair<string, vertex_descriptor_t>(g[*vertexIt]->name, *vertexIt));  
+            boost::tie(out_i, out_end) = out_edges(*vertexIt, g); 
+            for (; out_i != out_end; ++out_i)
+            {
+                Emap.insert(std::pair<string, edge_descriptor_t>(g[*out_i]->name, *out_i));
+            }
+        }
+
+    }
+
+    // 删除frame。只删除叶子节点，对非叶子节点无操作
+    bool rmFrame(const string frameName)
+    {
+        vertex_descriptor_t v = Vmap[frameName];
+        in_edge_iterator_t in_i, in_end;
+        if(isLeafFrame(frameName))
+        {
+            clear_vertex(v, g);
+            remove_vertex(v, g);
+            
+            updateVEmap(); //每次删除就要完全重建一次Vmap和Emap以实现同步。有没有更好的方法？
+            return true;
+        }
+        else
+        {
+            return false;
+        }        
+    }
+
+    // 删除frame及其后续所有frame
+    bool rmFrame_recursive(const string frameName)
+    {
+        if(rmFrame(frameName))
+        {
+            return true;
+        }
+        else
+        {
+            // BGL 对一个节点的所有的子节点做clear_edges后，最后一个节点的边无法删除，不知为何
+            // 所以这里先在父节点把出边都删掉，再清理各个字节点的边。
+            vector<string> child_v_name_list;
+            vector<string> child_j_name_list;
+            vertex_descriptor_t child_v;
+            out_edge_iterator_t out_i, out_end;
+            boost::tie(out_i, out_end) = out_edges(Vmap[frameName], g);    
+            for (; out_i != out_end; ++out_i)
+            {
+                child_j_name_list.push_back(g[*out_i]->name);
+                child_v = target(*out_i, g);
+                child_v_name_list.push_back(g[child_v]->name);
+            }
+
+            clear_out_edges( Vmap[frameName], g );
+
+            for(auto v_name : child_v_name_list)
+            {
+                rmFrame_recursive( v_name );
+            }
+            bool success = rmFrame(frameName);
+            assert(success);
+            return true;
+        }
+    }
+
+
+
+
+
     // // todo
     // bool add_TF(Joint j, Link l)
     // {

@@ -31,11 +31,16 @@ public:
 
     vector<string> getControlableJoints();
     std::string getRootName();
+    
+    pLink_t getLink_p(string name);
+    
+
 
     // TO DO
     bool addLink();
+    
+    bool getJoint();
     bool SwitchLinkParent();
-
   
 
 public:

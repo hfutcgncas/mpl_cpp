@@ -81,25 +81,25 @@ bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
     assert(pj != NULL);
     pj->updateTf(jValue);
 
-    if(updateTree)
+    if (updateTree)
     {
         mTf_tree.updateFtame_trans();
     }
     return true;
 }
 
-bool RobotModel::updateJointsValue( map<string, double> jvMap, bool updateTree )
+bool RobotModel::updateJointsValue(map<string, double> jvMap, bool updateTree)
 {
     // for(boost::tie(out_i, out_end) = out_edges(v, g);  )
     string name;
     float value;
-    for(auto jv : jvMap)
+    for (auto jv : jvMap)
     {
         boost::tie(name, value) = jv;
         setJointValue(name, value, false);
     }
 
-    if(updateTree)
+    if (updateTree)
     {
         mTf_tree.updateFtame_trans();
     }
@@ -125,5 +125,14 @@ std::string RobotModel::getRootName()
     return mTf_tree.getRootFrameName();
 }
 
+pLink_t RobotModel::getLink_p(string name)
+{
+    return  dynamic_pointer_cast<Link>(mTf_tree.getFrame_p(name));
+}
+
+// bool RobotModel::rmLink(string name)
+// {
+//     mTf_tree.g.remove_v
+// }
 
 } // namespace RobotModel
