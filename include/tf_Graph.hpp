@@ -44,6 +44,10 @@ public:
         rt2base = Eigen::Isometry3d::Identity();
     }
 
+    Frame(string Name):name(Name), rt2base(Eigen::Isometry3d::Identity())
+    {
+    }
+
     virtual ~Frame() {}
 
     Frame(const Frame &src) : rt2base(src.rt2base), name(src.name)
@@ -149,14 +153,15 @@ public:
         return true;
     }
 
+    // 查 ===============================================
     pFrame_t getFrame_p(const string frameName)
     {
-        return g[Vmap[frameName]];
+        return g[Vmap.at(frameName)];
     }
 
     pTF_t getTF_p(const string tfName)
     {
-        return g[Emap[tfName]];
+        return g[Emap.at(tfName)];
     }
 
     string getRootFrameName()
@@ -199,6 +204,7 @@ public:
 
     }
 
+    // 删 ======================================================
     // 删除frame。只删除叶子节点，对非叶子节点无操作
     bool rmFrame(const string frameName)
     {
@@ -254,18 +260,73 @@ public:
     }
 
 
+    // 增 ======================================================
+    bool add_Frame(pFrame_t pNewFrame, string parentName, pTF_t tf)
+    {
+        pFrame_t parentFrame = getFrame_p(parentName);
+        
+        vertex_descriptor_t v = boost::add_vertex(pNewFrame, g);
+        Vmap.insert(pair<string, vertex_descriptor_t>(pNewFrame->name, v));      
 
+        edge_descriptor_t e;
+        bool success;
+        boost::tie(e, success) = boost::add_edge(Vmap.at(parentName), v, tf, g);
+        if(success)
+        {
+            Emap.insert(pair<string, edge_descriptor_t>(tf->name, e));
+            return true;
+        }
+        return false;
+    }
+
+    bool add_Frame(string newFrameName, string parentName, Eigen::Isometry3d trans)
+    {
+        
+        if(Vmap.find(newFrameName)!=Vmap.end())
+        {
+            return false;
+        }
+        
+        vertex_descriptor_t v;
+        if(Vmap.find(newFrameName)!=Vmap.end())
+        {
+            v = Vmap.at(parentName);
+            pFrame_t pParent = g[v];
+        }
+        else
+        {
+            pFrame_t pParent = std::make_shared<Frame>(parentName);
+            vertex_descriptor_t v = boost::add_vertex(pParent, g);
+            Vmap.insert(pair<string, vertex_descriptor_t>(parentName, v));      
+        }
+        
+        pFrame_t pNewFrame = std::make_shared<Frame>(newFrameName);
+        vertex_descriptor_t v_new = boost::add_vertex(pNewFrame, g);
+        Vmap.insert(pair<string, vertex_descriptor_t>(newFrameName, v_new));
+
+        string jointName =  parentName + "-" + newFrameName + "-joint";
+        pTF_t tf = std::make_shared<TF>();
+        tf->name = jointName;
+        tf->parent = parentName;
+        tf->child = newFrameName;
+        tf->trans = trans;
+
+        edge_descriptor_t e;
+        bool success;
+        boost::tie(e, success) = boost::add_edge(v, v_new, tf, g);
+        if(success)
+        {
+            Emap.insert(pair<string, edge_descriptor_t>(tf->name, e));
+            return true;
+        }
+        return false;
+    
+    }
+    
 
 
     // // todo
-    // bool add_TF(Joint j, Link l)
-    // {
-    //     return false;
-    // }
-    // bool rm_Link(string linkName)
-    // {
-    //     return false;
-    // }
+    
     // bool modify_TF(Joint j, Link l)
     // {
     //     return false;

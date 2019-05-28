@@ -65,8 +65,8 @@ void RobotModel::build_frame_Tree()
     {
         auto v1 = mTf_tree.Vmap[item.second->parent];
         auto v2 = mTf_tree.Vmap[item.second->child];
-        pTF_t pframe = dynamic_pointer_cast<TF>(item.second);
-        std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, pframe, mTf_tree.g);
+        pTF_t ptf = dynamic_pointer_cast<TF>(item.second);
+        std::pair<edge_descriptor_t, bool> e = boost::add_edge(v1, v2, ptf, mTf_tree.g);
         mTf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
     }
 
