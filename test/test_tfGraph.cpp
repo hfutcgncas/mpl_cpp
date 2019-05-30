@@ -16,11 +16,11 @@ protected:
     virtual void SetUp() override
     {
         YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
-        pRobot = std::make_shared<RobotModel::RobotModel>(robot_dict);
-        pTree = std::make_shared<tf_Graph::TF_Graph>(pRobot->mTf_tree);
+        Robot.loadYAML(robot_dict);
+        pTree = std::make_shared<tf_Graph::TF_Graph>(Robot.mTf_tree);
     }
 
-    std::shared_ptr<RobotModel::RobotModel>  pRobot;
+    RobotModel::RobotModel Robot;
     std::shared_ptr<tf_Graph::TF_Graph> pTree;
 };
 
@@ -86,4 +86,21 @@ TEST_F(TF_GraphTest, add_Frame2)
 {
     EXPECT_TRUE(pTree->add_Frame("too1", "link_2", Eigen::Isometry3d::Identity() ));
     EXPECT_TRUE(pTree->add_Frame("too2", "link_22", Eigen::Isometry3d::Identity() ));
+}
+
+TEST_F(TF_GraphTest, getParentVE)
+{   
+    tf_Graph::pFrame_t pf ;
+    tf_Graph::pTF_t ptf ;
+
+    boost::tie(pf, ptf) =  pTree->getParentVE("link_6");
+    EXPECT_TRUE(pf->name == "link_5");
+    EXPECT_TRUE(ptf->name == "joint_6");
+
+    boost::tie(pf, ptf) =  pTree->getParentVE("base_link");
+    EXPECT_TRUE(pf->name == "base_link");
+    EXPECT_TRUE(ptf  == nullptr);
+
+    boost::tie(pf, ptf) =  pTree->getParentVE("tool0");
+    EXPECT_TRUE(pf->name == "link_6");
 }

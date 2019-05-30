@@ -99,6 +99,9 @@ typedef adjacency_list<listS, vecS, bidirectionalS, pFrame_t, pTF_t> DiGraph;
 typedef typename graph_traits<DiGraph>::vertex_descriptor vertex_descriptor_t;
 typedef typename graph_traits<DiGraph>::edge_descriptor edge_descriptor_t;
 
+typedef typename graph_traits<DiGraph>::edge_iterator edge_iterator_t;
+
+       
 typedef std::list<vertex_descriptor_t> TFOrder_t;
 typedef typename graph_traits<DiGraph>::out_edge_iterator out_edge_iterator_t;
 typedef typename graph_traits<DiGraph>::in_edge_iterator in_edge_iterator_t;
@@ -152,6 +155,21 @@ public:
     }
 
     // 查 ===============================================
+    bool isFrameInTree(const string frameName)
+    {
+        DiGraph::vertex_iterator vertexIt, vertexEnd;
+        tie(vertexIt, vertexEnd) = vertices(g);
+        for (; vertexIt != vertexEnd; ++vertexIt)
+        {
+            if(frameName == g[*vertexIt]->name)
+            {
+                return true;
+            }
+        }
+        return false;
+
+    }
+    
     pFrame_t getFrame_p(const string frameName)
     {
         return g[Vmap.at(frameName)];
@@ -161,6 +179,43 @@ public:
     {
         return g[Emap.at(tfName)];
     }
+
+    pFrame_t getFrame_p_safe(const string frameName)
+    {
+        DiGraph::vertex_iterator vertexIt, vertexEnd;
+        tie(vertexIt, vertexEnd) = vertices(g);
+        for (; vertexIt != vertexEnd; ++vertexIt)
+        {
+            if(frameName == g[*vertexIt]->name)
+            {
+                return g[*vertexIt];
+            }
+        }
+        return nullptr;
+    }
+
+    pTF_t getTF_p_safe(const string tfName)
+    {
+        DiGraph::edge_iterator edgeIt, edgeEnd;
+        tie(edgeIt, edgeEnd) =  boost::edges(g);
+        for (; edgeIt != edgeEnd; ++edgeIt)
+        {
+            if(tfName == g[*edgeIt]->name)
+            {
+                return g[*edgeIt];
+            }
+        }
+        return nullptr;
+    }
+
+    Eigen::Isometry3d getTrans(string frameNameSrc, string frameNameDist)
+    {
+        Eigen::Isometry3d src = getFrame_p(frameNameSrc)->rt2base;
+        Eigen::Isometry3d dist = getFrame_p(frameNameDist)->rt2base;
+        return dist * src.inverse();
+    }
+
+
 
     string getRootFrameName()
     {
@@ -326,26 +381,43 @@ public:
         return false;
     }
 
-    // todo: add test
-
-    Eigen::Isometry3d getTrans(string frameNameSrc, string frameNameDist)
+    pair<pFrame_t, pTF_t> getParentVE(string frameName)
     {
-        Eigen::Isometry3d src = getFrame_p(frameNameSrc)->rt2base;
-        Eigen::Isometry3d dist = getFrame_p(frameNameDist)->rt2base;
-        return dist * src.inverse();
+        vertex_descriptor_t vf, vp;
+        in_edge_iterator_t in_i, in_end;
+        
+        vf = Vmap.at(frameName);
+        boost::tie(in_i, in_end) = in_edges(Vmap[frameName], g);
+        if(in_i == in_end)
+        {
+            return  pair<pFrame_t, pTF_t>(g[vf], nullptr);
+        }
+        else
+        {
+            vp = source(*in_i, g);
+            return pair<pFrame_t, pTF_t>(g[vp], g[*in_i]);  ;
+        }
     }
 
-    // bool ChangeParent(string frameNameSrc, string frameNameDist)
-    // {
+    // bool ChangeParent(string frameName, string newParentName)
+    // {   
+    //     updateVEmap();
+    //     pFrame_t f = getFrame_p(frameName);
+    //     pFrame_t p = getFrame_p(newParentName);
 
-    // }
-    // {
+
+
     //     return false;
     // }
-    // bool update()
-    // {
-    //     return false;
-    // }
+
+
+
+    // todo
+    // isTree 
+    // getparent
+    // getparentedge
+    // 
+
 };
 
 } // namespace tf_Graph

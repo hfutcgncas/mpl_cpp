@@ -22,9 +22,10 @@ private:
     map<string, vector<Joint_Link_pair>> mChildMap;
 
 public:
-    RobotModel();
+    RobotModel(){}
     RobotModel(YAML::Node node);
 
+    void loadYAML(YAML::Node node);
     void build_frame_Tree();
     bool setJointValue(string jName, double jValue, bool updateTree);
     bool updateJointsValue(map<string, double> jvMap, bool updateTree);
@@ -32,13 +33,21 @@ public:
     vector<string> getControlableJoints();
     std::string getRootName();
     
-    pLink_t getLink_p(string name);
+
     
+    bool addLink(const pLink_t plink, string parentName, pJoint_t ptf );
+    bool rmLink(const string linkname );
+    bool rmLink_recursive(const string linkname);
+    pLink_t getLink_p(string name);
+    pJoint_t getJoint_p(string name);
+    // 当name不在图里时，返回NULL而非报错。 这样比较耗时
+    pLink_t getLink_p_safe(string name);
+    pJoint_t getJoint_p_safe(string name);
+
 
 
     // TO DO
-    bool addLink();
-    
+ 
     bool getJoint();
     bool SwitchLinkParent();
   
