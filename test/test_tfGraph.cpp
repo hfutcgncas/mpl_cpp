@@ -74,7 +74,7 @@ TEST_F(TF_GraphTest, add_Frame1)
     tf_Graph::pTF_t ptf = std::make_shared<tf_Graph::TF>();
     ptf->name = "joint_add";
     ptf->parent = "link_2";
-    ptf->child = "pf->name";
+    ptf->child = pf->name;
     ptf->trans = Eigen::Isometry3d::Identity();
 
     EXPECT_TRUE(pTree->add_Frame(pf, "link_2", ptf ));
@@ -85,4 +85,5 @@ TEST_F(TF_GraphTest, add_Frame1)
 TEST_F(TF_GraphTest, add_Frame2)
 {
     EXPECT_TRUE(pTree->add_Frame("too1", "link_2", Eigen::Isometry3d::Identity() ));
+    EXPECT_TRUE(pTree->add_Frame("too2", "link_22", Eigen::Isometry3d::Identity() ));
 }
