@@ -325,9 +325,19 @@ public:
     
 
 
-    // // todo
+    // todo: add test
     
-    // bool modify_TF(Joint j, Link l)
+    Eigen::Isometry3d getTrans(string frameNameSrc, string frameNameDist)
+    {
+        Eigen::Isometry3d src = getFrame_p(frameNameSrc)->rt2base;
+        Eigen::Isometry3d dist = getFrame_p(frameNameDist)->rt2base;
+        return dist * src.inverse();
+    }
+
+    // bool ChangeParent(string frameNameSrc, string frameNameDist)
+    // {
+
+    // }
     // {
     //     return false;
     // }
