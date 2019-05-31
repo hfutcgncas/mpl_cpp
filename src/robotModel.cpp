@@ -167,7 +167,7 @@ bool RobotModel::rmLink_recursive(const string linkName)
     }
 }
 
-// 查  (目前不安全)
+// 查  
 pLink_t RobotModel::getLink_p(string name)
 {
     return dynamic_pointer_cast<Link>(mTf_tree.getFrame_p(name));

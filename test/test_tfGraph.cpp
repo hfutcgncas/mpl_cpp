@@ -104,3 +104,15 @@ TEST_F(TF_GraphTest, getParentVE)
     boost::tie(pf, ptf) =  pTree->getParentVE("tool0");
     EXPECT_TRUE(pf->name == "link_6");
 }
+
+
+TEST_F(TF_GraphTest, ChangeParent)
+{
+    Eigen::Isometry3d trans1 = pTree->getFrame_p("tool0")->rt2base;
+    pTree ->ChangeParent( "tool0", "link1" );
+    Eigen::Isometry3d trans2 = pTree->getFrame_p("tool0")->rt2base;
+    
+    EXPECT_EQ(trans1.matrix(), trans2.matrix());
+    
+
+}

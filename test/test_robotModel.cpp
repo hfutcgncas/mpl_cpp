@@ -9,7 +9,6 @@
 #include "yaml-cpp/yaml.h"
 #include "robotModel.hpp"
 
-
 using namespace std;
 
 class RobotModelTest : public testing::Test
@@ -55,7 +54,8 @@ TEST_F(RobotModelTest, addLink)
     RobotModel::pLink_t plink = std::make_shared<RobotModel::Link>();
     plink->name = "new_link";
 
-    RobotModel::pJoint_t pjoint = std::make_shared<RobotModel::Joint>();;
+    RobotModel::pJoint_t pjoint = std::make_shared<RobotModel::Joint>();
+    ;
     pjoint->name = "new_joint";
     pjoint->parent = parentlink;
     pjoint->child = plink->name;
@@ -64,7 +64,6 @@ TEST_F(RobotModelTest, addLink)
     // ------------------------------------
     // pjoint->parent = "link_x";
     // EXCECT ( pRobot->addLink(plink, parentlink, pjoint)  );
-    
 }
 
 TEST_F(RobotModelTest, getLink_p)

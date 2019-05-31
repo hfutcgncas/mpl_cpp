@@ -208,11 +208,11 @@ public:
         return nullptr;
     }
 
-    Eigen::Isometry3d getTrans(string frameNameSrc, string frameNameDist)
+    Eigen::Isometry3d getTrans(string target_frameName, string base_frameName)
     {
-        Eigen::Isometry3d src = getFrame_p(frameNameSrc)->rt2base;
-        Eigen::Isometry3d dist = getFrame_p(frameNameDist)->rt2base;
-        return dist * src.inverse();
+        Eigen::Isometry3d target = getFrame_p(target_frameName)->rt2base;
+        Eigen::Isometry3d base = getFrame_p(base_frameName)->rt2base;
+        return base * target.inverse();
     }
 
 
@@ -399,16 +399,26 @@ public:
         }
     }
 
-    // bool ChangeParent(string frameName, string newParentName)
-    // {   
-    //     updateVEmap();
-    //     pFrame_t f = getFrame_p(frameName);
-    //     pFrame_t p = getFrame_p(newParentName);
+    bool ChangeParent(string frameName, string newParentName)
+    {   
+        updateVEmap();
+        pFrame_t pf, pNewParent, pOldParenf; 
+        pTF_t ptf;
+        pf = getFrame_p(frameName);
+        pNewParent = getFrame_p(newParentName);
+        tie(pOldParenf, ptf) = getParentVE(frameName);
 
-
-
-    //     return false;
-    // }
+        Eigen::Isometry3d newtrans = getTrans( frameName, newParentName  );
+        ptf->name = newParentName + "-" + frameName + "-joint";
+        ptf->parent = newParentName;
+        ptf->parent = frameName;
+        ptf->trans = newtrans;
+        
+        updateTFOrder();
+        updateVEmap();
+        updateFtame_trans();
+        return true;
+    }
 
 
 
