@@ -101,7 +101,6 @@ typedef typename graph_traits<DiGraph>::edge_descriptor edge_descriptor_t;
 
 typedef typename graph_traits<DiGraph>::edge_iterator edge_iterator_t;
 
-       
 typedef std::list<vertex_descriptor_t> TFOrder_t;
 typedef typename graph_traits<DiGraph>::out_edge_iterator out_edge_iterator_t;
 typedef typename graph_traits<DiGraph>::in_edge_iterator in_edge_iterator_t;
@@ -161,15 +160,14 @@ public:
         tie(vertexIt, vertexEnd) = vertices(g);
         for (; vertexIt != vertexEnd; ++vertexIt)
         {
-            if(frameName == g[*vertexIt]->name)
+            if (frameName == g[*vertexIt]->name)
             {
                 return true;
             }
         }
         return false;
-
     }
-    
+
     pFrame_t getFrame_p(const string frameName)
     {
         return g[Vmap.at(frameName)];
@@ -186,7 +184,7 @@ public:
         tie(vertexIt, vertexEnd) = vertices(g);
         for (; vertexIt != vertexEnd; ++vertexIt)
         {
-            if(frameName == g[*vertexIt]->name)
+            if (frameName == g[*vertexIt]->name)
             {
                 return g[*vertexIt];
             }
@@ -197,10 +195,10 @@ public:
     pTF_t getTF_p_safe(const string tfName)
     {
         DiGraph::edge_iterator edgeIt, edgeEnd;
-        tie(edgeIt, edgeEnd) =  boost::edges(g);
+        tie(edgeIt, edgeEnd) = boost::edges(g);
         for (; edgeIt != edgeEnd; ++edgeIt)
         {
-            if(tfName == g[*edgeIt]->name)
+            if (tfName == g[*edgeIt]->name)
             {
                 return g[*edgeIt];
             }
@@ -214,8 +212,6 @@ public:
         Eigen::Isometry3d base = getFrame_p(base_frameName)->rt2base;
         return base.inverse() * target;
     }
-
-
 
     string getRootFrameName()
     {
@@ -316,8 +312,7 @@ public:
     bool add_Frame(pFrame_t pNewFrame, string parentName, pTF_t tf)
     {
         // 要求newFrameName 不在现有树上 ,  且parentName在现有树上
-        if ( (Vmap.find(pNewFrame->name) != Vmap.end()) 
-            || (Vmap.find(parentName) == Vmap.end()) )
+        if ((Vmap.find(pNewFrame->name) != Vmap.end()) || (Vmap.find(parentName) == Vmap.end()))
         {
             return false;
         }
@@ -337,8 +332,6 @@ public:
         }
         return false;
     }
-
-
 
     bool add_Frame(string newFrameName, string parentName, Eigen::Isometry3d trans)
     {
@@ -387,39 +380,40 @@ public:
     {
         vertex_descriptor_t vf, vp;
         in_edge_iterator_t in_i, in_end;
-        
+
         vf = Vmap.at(frameName);
         boost::tie(in_i, in_end) = in_edges(Vmap[frameName], g);
-        if(in_i == in_end)
+        if (in_i == in_end)
         {
-            return  pair<pFrame_t, pTF_t>(g[vf], nullptr);
+            return pair<pFrame_t, pTF_t>(g[vf], nullptr);
         }
         else
         {
             vp = source(*in_i, g);
-            return pair<pFrame_t, pTF_t>(g[vp], g[*in_i]);  ;
+            return pair<pFrame_t, pTF_t>(g[vp], g[*in_i]);
+            ;
         }
     }
 
     bool ChangeParent(string frameName, string newParentName)
-    {   
+    {
         updateVEmap();
         updateFtame_trans();
 
-        pFrame_t pf, pOldParenf; 
+        pFrame_t pf, pOldParenf;
         pTF_t ptf;
         pf = getFrame_p(frameName);
         tie(pOldParenf, ptf) = getParentVE(frameName);
 
-        Eigen::Isometry3d newtrans = getTrans( frameName, newParentName  );
-        remove_edge( Emap.at(ptf->name), g );
+        Eigen::Isometry3d newtrans = getTrans(frameName, newParentName);
+        remove_edge(Emap.at(ptf->name), g);
         // modify old tf to new tf
         ptf->name = newParentName + "-" + frameName + "-joint";
         ptf->parent = newParentName;
         ptf->child = frameName;
         ptf->trans = newtrans;
-        add_edge( Vmap.at(newParentName), Vmap.at(frameName), ptf, g );
-        
+        add_edge(Vmap.at(newParentName), Vmap.at(frameName), ptf, g);
+
         updateVEmap();
         updateTFOrder();
         updateFtame_trans();
@@ -428,25 +422,23 @@ public:
 
     string getRoot(string frameName)
     {
-        pFrame_t pOldParenf; 
+        pFrame_t pOldParenf;
         pTF_t ptf;
         string name_tmp = frameName;
         do
         {
             tie(pOldParenf, ptf) = getParentVE(name_tmp);
             name_tmp = pOldParenf->name;
-        }while(ptf!=nullptr);
+        } while (ptf != nullptr);
 
         return name_tmp;
     }
 
-
     // todo
-    // isTree 
+    // isTree
     // getparent
     // getparentedge
-    // 
-
+    //
 };
 
 } // namespace tf_Graph

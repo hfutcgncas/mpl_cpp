@@ -77,7 +77,6 @@ void RobotModel::build_frame_Tree()
     mTf_tree.updateVEmap();
     mTf_tree.updateTFOrder();
     mTf_tree.updateFtame_trans();
-    
 }
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)

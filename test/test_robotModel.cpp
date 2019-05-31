@@ -64,7 +64,6 @@ TEST_F(RobotModelTest, addLink)
     // ------------------------------------
     // pjoint->parent = "link_x";
     // EXCECT ( Robot.addLink(plink, parentlink, pjoint)  );
-    
 }
 
 TEST_F(RobotModelTest, getLink_p)

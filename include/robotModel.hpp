@@ -22,7 +22,7 @@ private:
     map<string, vector<Joint_Link_pair>> mChildMap;
 
 public:
-    RobotModel(){}
+    RobotModel() {}
     RobotModel(YAML::Node node);
 
     void loadYAML(YAML::Node node);
@@ -32,11 +32,9 @@ public:
 
     vector<string> getControlableJoints();
     std::string getRootName();
-    
 
-    
-    bool addLink(const pLink_t plink, string parentName, pJoint_t ptf );
-    bool rmLink(const string linkname );
+    bool addLink(const pLink_t plink, string parentName, pJoint_t ptf);
+    bool rmLink(const string linkname);
     bool rmLink_recursive(const string linkname);
     pLink_t getLink_p(string name);
     pJoint_t getJoint_p(string name);
@@ -46,12 +44,10 @@ public:
 
     bool ChangeParentLink(string targetName, string newParentName);
 
-
     // TO DO
- 
+
     bool getJoint();
     bool SwitchLinkParent();
-  
 
 public:
     tf_Graph::TF_Graph mTf_tree;
