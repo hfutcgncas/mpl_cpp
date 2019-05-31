@@ -9,7 +9,6 @@
 #include "robotModel.hpp"
 #include "tf_Graph.hpp"
 
-
 class TF_GraphTest : public testing::Test
 {
 protected:
@@ -17,6 +16,7 @@ protected:
     {
         YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
         Robot.loadYAML(robot_dict);
+        Robot.mTf_tree.updateFtame_trans();
         pTree = std::make_shared<tf_Graph::TF_Graph>(Robot.mTf_tree);
     }
 
@@ -36,28 +36,27 @@ TEST_F(TF_GraphTest, rmFrame)
     EXPECT_TRUE(pTree->rmFrame("tool0"));
 
     bool flag = false;
-    for(auto item: pTree->Vmap )
+    for (auto item : pTree->Vmap)
     {
         EXPECT_NE(item.first, "tool0");
-        if(item.first == "link_1")
+        if (item.first == "link_1")
         {
             flag = true;
         }
     }
     EXPECT_TRUE(flag);
-
 }
 
 TEST_F(TF_GraphTest, rmFrame_recursive)
 {
     EXPECT_TRUE(pTree->rmFrame_recursive("link_1"));
-   
+
     bool flag = false;
-    for(auto item: pTree->Vmap )
+    for (auto item : pTree->Vmap)
     {
         EXPECT_NE(item.first, "link_6");
         EXPECT_NE(item.first, "link_2");
-        if(item.first == "base_link")
+        if (item.first == "base_link")
         {
             flag = true;
         }
@@ -77,42 +76,43 @@ TEST_F(TF_GraphTest, add_Frame1)
     ptf->child = pf->name;
     ptf->trans = Eigen::Isometry3d::Identity();
 
-    EXPECT_TRUE(pTree->add_Frame(pf, "link_2", ptf ));
-
+    EXPECT_TRUE(pTree->add_Frame(pf, "link_2", ptf));
 }
-
 
 TEST_F(TF_GraphTest, add_Frame2)
 {
-    EXPECT_TRUE(pTree->add_Frame("too1", "link_2", Eigen::Isometry3d::Identity() ));
-    EXPECT_TRUE(pTree->add_Frame("too2", "link_22", Eigen::Isometry3d::Identity() ));
+    EXPECT_TRUE(pTree->add_Frame("too1", "link_2", Eigen::Isometry3d::Identity()));
+    EXPECT_TRUE(pTree->add_Frame("too2", "link_22", Eigen::Isometry3d::Identity()));
 }
 
 TEST_F(TF_GraphTest, getParentVE)
-{   
-    tf_Graph::pFrame_t pf ;
-    tf_Graph::pTF_t ptf ;
+{
+    tf_Graph::pFrame_t pf;
+    tf_Graph::pTF_t ptf;
 
-    boost::tie(pf, ptf) =  pTree->getParentVE("link_6");
+    boost::tie(pf, ptf) = pTree->getParentVE("link_6");
     EXPECT_TRUE(pf->name == "link_5");
     EXPECT_TRUE(ptf->name == "joint_6");
 
-    boost::tie(pf, ptf) =  pTree->getParentVE("base_link");
+    boost::tie(pf, ptf) = pTree->getParentVE("base_link");
     EXPECT_TRUE(pf->name == "base_link");
-    EXPECT_TRUE(ptf  == nullptr);
+    EXPECT_TRUE(ptf == nullptr);
 
-    boost::tie(pf, ptf) =  pTree->getParentVE("tool0");
+    boost::tie(pf, ptf) = pTree->getParentVE("tool0");
     EXPECT_TRUE(pf->name == "link_6");
 }
-
 
 TEST_F(TF_GraphTest, ChangeParent)
 {
     Eigen::Isometry3d trans1 = pTree->getFrame_p("tool0")->rt2base;
-    pTree ->ChangeParent( "tool0", "link1" );
-    Eigen::Isometry3d trans2 = pTree->getFrame_p("tool0")->rt2base;
-    
-    EXPECT_EQ(trans1.matrix(), trans2.matrix());
-    
 
+    pTree->ChangeParent("tool0", "link_1");
+    Eigen::Isometry3d trans2 = pTree->getFrame_p("tool0")->rt2base;
+    EXPECT_TRUE(trans1.isApprox(trans2));
+}
+
+TEST_F(TF_GraphTest, getroot)
+{
+    EXPECT_EQ( pTree->getRoot("tool0"), "base_link" );
+    EXPECT_EQ( pTree->getRoot("base_link"), "base_link" );
 }

@@ -38,7 +38,6 @@ void operator<<(pJoint_t &pjoint, const YAML::Node &node)
     *pjoint << node;
 }
 
-
 void RobotModel::loadYAML(YAML::Node node)
 {
     // ControlableJoints
@@ -75,8 +74,10 @@ void RobotModel::build_frame_Tree()
         mTf_tree.Emap.insert(pair<string, edge_descriptor_t>(item.first, e.first));
     }
 
+    mTf_tree.updateVEmap();
     mTf_tree.updateTFOrder();
     mTf_tree.updateFtame_trans();
+    
 }
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
@@ -128,8 +129,6 @@ std::string RobotModel::getRootName()
     return mTf_tree.getRootFrameName();
 }
 
-
-
 // 增
 bool RobotModel::addLink(const pLink_t plink, const string parentName, const pJoint_t pjoint)
 {
@@ -167,7 +166,7 @@ bool RobotModel::rmLink_recursive(const string linkName)
     }
 }
 
-// 查  
+// 查
 pLink_t RobotModel::getLink_p(string name)
 {
     return dynamic_pointer_cast<Link>(mTf_tree.getFrame_p(name));
@@ -187,7 +186,16 @@ pJoint_t RobotModel::getJoint_p_safe(string name)
     return dynamic_pointer_cast<Joint>(mTf_tree.getTF_p_safe(name));
 }
 
-
+bool RobotModel::ChangeParentLink(string targetName, string newParentName)
+{
+    mTf_tree.ChangeParent(targetName, newParentName);
+    pTF_t ptf;
+    pFrame_t pf;
+    tie(pf, ptf) = mTf_tree.getParentVE(targetName);
+    pJoint_t pj = dynamic_pointer_cast<Joint>(ptf);
+    pj->trans_ori = pj->trans;
+    pj->type = "fixed";
+    return true;
+}
 
 } // namespace RobotModel
-

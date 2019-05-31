@@ -44,6 +44,7 @@ public:
     pLink_t getLink_p_safe(string name);
     pJoint_t getJoint_p_safe(string name);
 
+    bool ChangeParentLink(string targetName, string newParentName);
 
 
     // TO DO

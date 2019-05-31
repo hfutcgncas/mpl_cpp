@@ -212,7 +212,7 @@ public:
     {
         Eigen::Isometry3d target = getFrame_p(target_frameName)->rt2base;
         Eigen::Isometry3d base = getFrame_p(base_frameName)->rt2base;
-        return base * target.inverse();
+        return base.inverse() * target;
     }
 
 
@@ -338,6 +338,8 @@ public:
         return false;
     }
 
+
+
     bool add_Frame(string newFrameName, string parentName, Eigen::Isometry3d trans)
     {
         // 要求newFrameName 不在现有树上
@@ -402,24 +404,41 @@ public:
     bool ChangeParent(string frameName, string newParentName)
     {   
         updateVEmap();
-        pFrame_t pf, pNewParent, pOldParenf; 
+        updateFtame_trans();
+
+        pFrame_t pf, pOldParenf; 
         pTF_t ptf;
         pf = getFrame_p(frameName);
-        pNewParent = getFrame_p(newParentName);
         tie(pOldParenf, ptf) = getParentVE(frameName);
 
         Eigen::Isometry3d newtrans = getTrans( frameName, newParentName  );
+        remove_edge( Emap.at(ptf->name), g );
+        // modify old tf to new tf
         ptf->name = newParentName + "-" + frameName + "-joint";
         ptf->parent = newParentName;
-        ptf->parent = frameName;
+        ptf->child = frameName;
         ptf->trans = newtrans;
+        add_edge( Vmap.at(newParentName), Vmap.at(frameName), ptf, g );
         
-        updateTFOrder();
         updateVEmap();
+        updateTFOrder();
         updateFtame_trans();
         return true;
     }
 
+    string getRoot(string frameName)
+    {
+        pFrame_t pOldParenf; 
+        pTF_t ptf;
+        string name_tmp = frameName;
+        do
+        {
+            tie(pOldParenf, ptf) = getParentVE(name_tmp);
+            name_tmp = pOldParenf->name;
+        }while(ptf!=nullptr);
+
+        return name_tmp;
+    }
 
 
     // todo

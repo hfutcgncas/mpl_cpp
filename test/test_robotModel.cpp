@@ -85,3 +85,9 @@ TEST_F(RobotModelTest, rmLink_recursive)
     EXPECT_EQ(Robot.getLink_p_safe("link_1"), nullptr);
     EXPECT_EQ(Robot.getLink_p_safe("tool0"), nullptr);
 }
+
+// no good
+TEST_F(RobotModelTest, ChangeParentLink)
+{
+    EXPECT_TRUE(Robot.ChangeParentLink("tool0", "link_1"));
+}
