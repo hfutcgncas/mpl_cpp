@@ -18,20 +18,20 @@ protected:
     virtual void SetUp() override
     {
         YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
-        pRobot = std::make_shared<RobotModel::RobotModel>(robot_dict);
+        Robot.loadYAML(robot_dict);
     }
 
-    std::shared_ptr<RobotModel::RobotModel> pRobot;
+    RobotModel::RobotModel Robot;
 };
 
 TEST_F(RobotModelTest, loadYAML_framename)
 {
-    EXPECT_EQ(pRobot->mTf_tree.getFrame_p("tool0")->name, "tool0");
+    EXPECT_EQ(Robot.mTf_tree.getFrame_p("tool0")->name, "tool0");
 }
 
 TEST_F(RobotModelTest, getControlableJoints)
 {
-    std::vector<std::string> cj = pRobot->getControlableJoints();
+    std::vector<std::string> cj = Robot.getControlableJoints();
     std::vector<std::string> gt;
     gt.push_back("joint_1");
     gt.push_back("joint_2");
@@ -45,7 +45,7 @@ TEST_F(RobotModelTest, getControlableJoints)
 
 TEST_F(RobotModelTest, getRootName)
 {
-    EXPECT_EQ(pRobot->getRootName(), "base_link");
+    EXPECT_EQ(Robot.getRootName(), "base_link");
 }
 
 TEST_F(RobotModelTest, addLink)
@@ -59,29 +59,29 @@ TEST_F(RobotModelTest, addLink)
     pjoint->name = "new_joint";
     pjoint->parent = parentlink;
     pjoint->child = plink->name;
-    EXPECT_TRUE(pRobot->addLink(plink, parentlink, pjoint));
+    EXPECT_TRUE(Robot.addLink(plink, parentlink, pjoint));
 
     // ------------------------------------
     // pjoint->parent = "link_x";
-    // EXCECT ( pRobot->addLink(plink, parentlink, pjoint)  );
+    // EXCECT ( Robot.addLink(plink, parentlink, pjoint)  );
     
 }
 
 TEST_F(RobotModelTest, getLink_p)
 {
-    EXPECT_EQ(pRobot->getLink_p("tool0")->name, "tool0");
+    EXPECT_EQ(Robot.getLink_p("tool0")->name, "tool0");
 }
 
 TEST_F(RobotModelTest, rmLink)
 {
-    EXPECT_FALSE(pRobot->rmLink("link_1"));
-    EXPECT_TRUE(pRobot->rmLink("tool0"));
-    EXPECT_EQ(pRobot->getLink_p_safe("tool0"), nullptr);
+    EXPECT_FALSE(Robot.rmLink("link_1"));
+    EXPECT_TRUE(Robot.rmLink("tool0"));
+    EXPECT_EQ(Robot.getLink_p_safe("tool0"), nullptr);
 }
 
 TEST_F(RobotModelTest, rmLink_recursive)
 {
-    EXPECT_TRUE(pRobot->rmLink_recursive("link_1"));
-    EXPECT_EQ(pRobot->getLink_p_safe("link_1"), nullptr);
-    EXPECT_EQ(pRobot->getLink_p_safe("tool0"), nullptr);
+    EXPECT_TRUE(Robot.rmLink_recursive("link_1"));
+    EXPECT_EQ(Robot.getLink_p_safe("link_1"), nullptr);
+    EXPECT_EQ(Robot.getLink_p_safe("tool0"), nullptr);
 }
