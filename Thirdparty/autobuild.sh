@@ -65,4 +65,16 @@ echo "make octomap FINISHED"
 echo "======================================"
 
 
+
+echo "=========================================="
+echo " Start install fcl "
+rm -rf $SH_FILE_PATH/fcl/build
+mkdir $SH_FILE_PATH/fcl/build
+cd $SH_FILE_PATH/fcl/build
+cmake ..
+make -j8
+cp -r $SH_FILE_PATH/fcl/build/lib/libfcl* $SH_FILE_PATH/libs/
+echo "make fcl FINISHED"
+echo "======================================"
+
 cd $SH_FILE_PATH
