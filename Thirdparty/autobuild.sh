@@ -1,5 +1,8 @@
 #!/bin/bash
 
+rm -rf libs
+mkdir libs
+
 
 # ==============================================================
 # LD_LIBRARY_PATH
@@ -22,6 +25,7 @@ mkdir $SH_FILE_PATH/yaml-cpp/build
 cd $SH_FILE_PATH/yaml-cpp/build
 cmake ..
 make -j8
+cp $SH_FILE_PATH/yaml-cpp/build/libyaml-cpp.a $SH_FILE_PATH/libs/
 echo "make yaml-cpp FINISHED"
 echo "=========================================="
 
@@ -32,7 +36,33 @@ mkdir $SH_FILE_PATH/googletest/build
 cd $SH_FILE_PATH/googletest/build
 cmake ..
 make -j8
+cp $SH_FILE_PATH/googletest/build/lib/* $SH_FILE_PATH/libs/
 echo "make gtest FINISHED"
 echo "======================================"
+
+echo "=========================================="
+echo " Start install libccd "
+rm -rf $SH_FILE_PATH/libccd/build
+mkdir $SH_FILE_PATH/libccd/build
+cd $SH_FILE_PATH/libccd/build
+cmake -G "Unix Makefiles" ..
+make -j8
+cp $SH_FILE_PATH/libccd/build/src/libccd* $SH_FILE_PATH/libs/
+echo "make libccd FINISHED"
+echo "======================================"
+
+
+
+echo "=========================================="
+echo " Start install octomap "
+rm -rf $SH_FILE_PATH/octomap/build
+mkdir $SH_FILE_PATH/octomap/build
+cd $SH_FILE_PATH/octomap/build
+cmake -BUILD_OCTOVIS_SUBPROJECT=OFF  ..
+make -j8
+cp -r $SH_FILE_PATH/octomap/lib/* $SH_FILE_PATH/libs/
+echo "make octomap FINISHED"
+echo "======================================"
+
 
 cd $SH_FILE_PATH

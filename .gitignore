@@ -1,6 +1,9 @@
 build
 release
 
-Thirdparty/yaml-cpp/build
+Thirdparty/*/build
+Thirdparty/libs
 
 .vscode
+
+tmp
