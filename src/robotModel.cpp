@@ -16,6 +16,7 @@ using namespace std;
 using namespace boost;
 using namespace tf_Graph;
 
+// << for Joint_Link_pair list
 void operator<<(vector<Joint_Link_pair> &jlSet, const YAML::Node &node)
 {
     Joint_Link_pair p;
@@ -26,12 +27,14 @@ void operator<<(vector<Joint_Link_pair> &jlSet, const YAML::Node &node)
     }
 }
 
+// << for pLink_t
 void operator<<(pLink_t &plink, const YAML::Node &node)
 {
     plink = std::make_shared<Link>();
     *plink << node;
 }
 
+// << for pJoint_t
 void operator<<(pJoint_t &pjoint, const YAML::Node &node)
 {
     pjoint = std::make_shared<Joint>();
@@ -46,6 +49,8 @@ void RobotModel::loadYAML(YAML::Node node)
     mLinkMap = parseYAMLMap<pLink_t>(node["link_map"]);
     mParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
     mChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
+
+
 
     build_frame_Tree();
 }

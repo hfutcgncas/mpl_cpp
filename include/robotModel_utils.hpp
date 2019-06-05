@@ -8,6 +8,19 @@
 #include "yaml-cpp/yaml.h"
 #include "tf_Graph.hpp"
 
+// fcl
+#include "fcl/fcl.h"
+
+
+// #include "fcl/collision_object.h"
+// #include "fcl/geometry/collision_geometry.h"
+
+// #include "fcl/math/bv/utility.h"
+// #include "fcl/narrowphase/collision.h"
+// #include "fcl/narrowphase/detail/gjk_solver_indep.h"
+// #include "fcl/narrowphase/detail/gjk_solver_libccd.h"
+// #include "fcl/narrowphase/detail/traversal/collision_node.h"
+
 namespace RobotModel
 {
 
@@ -159,29 +172,80 @@ public:
 class Link : public tf_Graph::Frame
 {
 public:
-    Link() : tf_Graph::Frame() {}
+    
+    fcl::CollisionObject* co;
+   
+    Link() : tf_Graph::Frame() 
+    {
+        co = NULL;
+    }
 
-    // Link(string Name) : name(Name), rt2base(Eigen::Isometry3d::Identity())
-    // {
-    // }
-
-    // string name;
 
     void operator<<(const YAML::Node &node)
     {
-        name = node["name"].as<string>();
+        name = node["name"].as<std::string>();
     }
 
     Link &operator=(const Link &src)
     {
         name = src.name;
         rt2base = src.rt2base;
+        fcl::Transform3f tf = src.co->getTransform();
     }
 
     Link(const Link &src)
     {
         *this = src;
     }
+};
+
+
+class Link_geom
+{
+
+public:
+    std::shared_ptr<fcl::CollisionObject>  obj;
+    fcl::Transform3f tf;
+
+    Link_geom()
+    {
+        obj = nullptr;
+    }
+
+    void operator<<(const YAML::Node &node)
+    {
+        std::string type = node["geom"]["type"].as<std::string>();
+
+        if(type == "Box")
+        {
+            std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
+            fcl::Box obj_geom(value[0], value[1], value[2]);
+            obj = std::make_shared<fcl::CollisionObject>(obj_geom);
+        }
+        else if (type == "Cylinder")
+        {
+            std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
+            fcl::Cylinder obj_geom(value[0], value[1]);
+            obj = std::make_shared<fcl::CollisionObject>(obj_geom);
+        }
+        else if (type == "Sphere")
+        {
+            double value = node["geom"]["value"].as<double>();
+            fcl::Sphere obj_geom(value);
+            obj = std::make_shared<fcl::CollisionObject>(obj_geom);
+        }
+        else if (type == "BVHModel")
+        {
+            /* code */
+        }
+        else
+        {
+            std::cout<<"Not vailed geom type"<<std::endl;
+        }
+           
+        
+    }
+
 };
 
 typedef std::shared_ptr<Link> pLink_t;

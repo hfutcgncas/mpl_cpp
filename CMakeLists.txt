@@ -14,11 +14,14 @@ include_directories( ${PROJECT_SOURCE_DIR}/include
                      ${PROJECT_SOURCE_DIR}/Thirdparty/boost_1_7_0  # boost
                      ${PROJECT_SOURCE_DIR}/Thirdparty/eigen        # eigen 
                      ${PROJECT_SOURCE_DIR}/Thirdparty/googletest/googletest/include # gtest
+                     ${PROJECT_SOURCE_DIR}/Thirdparty/fcl/include  # fcl
                    )
 
 #lib link
-link_directories( ${PROJECT_SOURCE_DIR}/Thirdparty/yaml-cpp/build # yaml-cpp
-                  ${PROJECT_SOURCE_DIR}/Thirdparty/googletest/build/lib # gtest
+link_directories( 
+                #   ${PROJECT_SOURCE_DIR}/Thirdparty/yaml-cpp/build # yaml-cpp
+                #   ${PROJECT_SOURCE_DIR}/Thirdparty/googletest/build/lib # gtest
+                  ${PROJECT_SOURCE_DIR}/Thirdparty/libs # all libs
                 )
 
 #sources
