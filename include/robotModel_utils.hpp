@@ -173,11 +173,10 @@ class Link : public tf_Graph::Frame
 {
 public:
     
-    fcl::CollisionObject* co;
+    
    
     Link() : tf_Graph::Frame() 
     {
-        co = NULL;
     }
 
 
@@ -190,7 +189,6 @@ public:
     {
         name = src.name;
         rt2base = src.rt2base;
-        fcl::Transform3f tf = src.co->getTransform();
     }
 
     Link(const Link &src)
@@ -204,7 +202,7 @@ class Link_geom
 {
 
 public:
-    std::shared_ptr<fcl::CollisionObject>  obj;
+    std::shared_ptr<fcl::CollisionObject<double>>  obj;
     fcl::Transform3f tf;
 
     Link_geom()
@@ -219,20 +217,20 @@ public:
         if(type == "Box")
         {
             std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
-            fcl::Box obj_geom(value[0], value[1], value[2]);
-            obj = std::make_shared<fcl::CollisionObject>(obj_geom);
+            std::shared_ptr<fcl::Box<double>> obj_geom = std::make_shared<fcl::Box<double>>(value[0], value[1], value[2]);
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
         }
         else if (type == "Cylinder")
         {
             std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
-            fcl::Cylinder obj_geom(value[0], value[1]);
-            obj = std::make_shared<fcl::CollisionObject>(obj_geom);
+            std::shared_ptr<fcl::Cylinder<double>> obj_geom = std::make_shared<fcl::Cylinder<double>>(value[0], value[1]);
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
         }
         else if (type == "Sphere")
         {
             double value = node["geom"]["value"].as<double>();
-            fcl::Sphere obj_geom(value);
-            obj = std::make_shared<fcl::CollisionObject>(obj_geom);
+            std::shared_ptr<fcl::Sphere<double>> obj_geom = std::make_shared<fcl::Sphere<double>>(value);
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
         }
         else if (type == "BVHModel")
         {
