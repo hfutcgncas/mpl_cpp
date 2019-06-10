@@ -85,6 +85,17 @@ TEST_F(RobotModelTest, rmLink_recursive)
     EXPECT_EQ(Robot.getLink_p_safe("tool0"), nullptr);
 }
 
+TEST_F(RobotModelTest, collision)
+{
+    // Robot.
+    EXPECT_TRUE(Robot.isCollision("link_1", "link_2"));
+    EXPECT_FALSE(Robot.isCollision("link_1", "link_3"));
+    
+}
+
+
+
+
 // no good
 TEST_F(RobotModelTest, ChangeParentLink)
 {

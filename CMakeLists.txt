@@ -14,6 +14,7 @@ include_directories( ${PROJECT_SOURCE_DIR}/include
                      ${PROJECT_SOURCE_DIR}/Thirdparty/boost_1_7_0  # boost
                      ${PROJECT_SOURCE_DIR}/Thirdparty/eigen        # eigen 
                      ${PROJECT_SOURCE_DIR}/Thirdparty/googletest/googletest/include # gtest
+                     ${PROJECT_SOURCE_DIR}/Thirdparty/octomap/octomap/include  # octomap ? 
                      ${PROJECT_SOURCE_DIR}/Thirdparty/fcl/build/include  # fcl
                      ${PROJECT_SOURCE_DIR}/Thirdparty/fcl/include  # fcl
                    )

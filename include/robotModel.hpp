@@ -4,6 +4,15 @@
 #include "robotModel_utils.hpp"
 #include "tf_Graph.hpp"
 
+
+namespace Utils
+{
+
+
+
+}
+
+
 namespace RobotModel
 {
 
@@ -11,6 +20,7 @@ using namespace std;
 
 void operator<<(pLink_t &plink, const YAML::Node &node);
 void operator<<(pJoint_t &pjoint, const YAML::Node &node);
+void operator<<(pLink_geom_t &plink_geom, const YAML::Node &node);
 
 class RobotModel
 {
@@ -20,6 +30,8 @@ private:
     map<string, pLink_t> mLinkMap;
     map<string, Joint_Link_pair> mParentMap;
     map<string, vector<Joint_Link_pair>> mChildMap;
+
+    map<string, pLink_geom_t> mLinkCollisionMap;
 
 public:
     RobotModel() {}
@@ -43,6 +55,8 @@ public:
     pJoint_t getJoint_p_safe(string name);
 
     bool ChangeParentLink(string targetName, string newParentName);
+
+    bool isCollision(string link1, string link2 );
 
     // TO DO
 

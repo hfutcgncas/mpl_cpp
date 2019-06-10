@@ -123,7 +123,7 @@ public:
         return &TFOrder;
     }
 
-    bool updateFtame_trans()
+    bool updateFrame_trans()
     {
         if (TFOrder.size() == 0)
         {
@@ -398,7 +398,7 @@ public:
     bool ChangeParent(string frameName, string newParentName)
     {
         updateVEmap();
-        updateFtame_trans();
+        updateFrame_trans();
 
         pFrame_t pf, pOldParenf;
         pTF_t ptf;
@@ -416,7 +416,7 @@ public:
 
         updateVEmap();
         updateTFOrder();
-        updateFtame_trans();
+        updateFrame_trans();
         return true;
     }
 

@@ -203,17 +203,18 @@ class Link_geom
 
 public:
     std::shared_ptr<fcl::CollisionObject<double>>  obj;
-    fcl::Transform3f tf;
-
+    fcl::Transform3d tf_base; //  fcl::Transform3d <=> Eigen::Isometry3d
+    
     Link_geom()
     {
         obj = nullptr;
+        tf_base = Eigen::Isometry3d::Identity();
     }
 
     void operator<<(const YAML::Node &node)
     {
+        // collision obj
         std::string type = node["geom"]["type"].as<std::string>();
-
         if(type == "Box")
         {
             std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
@@ -235,19 +236,81 @@ public:
         else if (type == "BVHModel")
         {
             /* code */
+            vector< vector<  fcl::Vector3d > > value;
+            for (auto triangleNode: node["geom"]["value"])
+            {
+                vector<  fcl::Vector3d > triangle;
+                for(auto vNode : triangleNode)
+                {
+                    fcl::Vector3d v;
+                    v[0] = vNode[0].as<double>();
+                    v[1] = vNode[1].as<double>();
+                    v[2] = vNode[2].as<double>();
+                    triangle.push_back( v );
+                }
+                value.push_back(triangle);
+            }
+            int cntv = value.size();
+            std::shared_ptr<fcl::BVHModel<fcl::OBBRSS<double>> > obj_geom = std::make_shared<fcl::BVHModel<fcl::OBBRSS<double>> >();
+            obj_geom->beginModel(cntv*3, cntv);
+            for( int i=0; i<cntv; i++)
+            {
+                obj_geom->addTriangle( value[i][0], value[i][1], value[i][2] );
+            }
+            obj_geom->endModel();
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
         }
         else
         {
             std::cout<<"Not vailed geom type"<<std::endl;
+            obj = nullptr;
         }
-           
+
+       
+
+        // tf.
+
+        Eigen::Matrix4d tf_mat = tf_base.matrix();
+        // Eigen::Vector3d translation;
+        for(int i = 0;i<4;i++)
+        {
+            for(int j = 0;j<4;j++)
+            {
+                tf_mat(i,j) = node["tf"][i][j].as<double>();
+            }
+            // translation[i] = tfNode[i][3].as<double>();
+        }
+
+
+         // 参考视觉slam14 https://www.cnblogs.com/ChrisCoder/p/10083110.html
+        // float ori_value = norm<float>(origin_rpy);
+
+        // Eigen::AngleAxisd r;
+        // r.fromRotationMatrix(tf_R_mat);
+        // tf = Eigen::Isometry3d::Identity();
+        // tf.rotate(r);
+        // tf.pretranslate(translation);
+
         
     }
 
+    bool setTF(Eigen::Isometry3d tf_link )
+    {
+        if(obj != nullptr)
+        {
+            obj->setTransform( tf_link*tf_base );
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
 };
 
 typedef std::shared_ptr<Link> pLink_t;
 typedef std::shared_ptr<Joint> pJoint_t;
+typedef std::shared_ptr<Link_geom> pLink_geom_t;
 
 class Joint_Link_pair
 {

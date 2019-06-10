@@ -16,7 +16,7 @@ protected:
     {
         YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
         Robot.loadYAML(robot_dict);
-        Robot.mTf_tree.updateFtame_trans();
+        Robot.mTf_tree.updateFrame_trans();
         pTree = std::make_shared<tf_Graph::TF_Graph>(Robot.mTf_tree);
     }
 

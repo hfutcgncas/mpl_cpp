@@ -41,6 +41,13 @@ void operator<<(pJoint_t &pjoint, const YAML::Node &node)
     *pjoint << node;
 }
 
+// << for pJoint_t
+void operator<<(pLink_geom_t &plink_geom, const YAML::Node &node)
+{
+    plink_geom = std::make_shared<Link_geom>();
+    *plink_geom << node;
+}
+
 void RobotModel::loadYAML(YAML::Node node)
 {
     // ControlableJoints
@@ -50,6 +57,7 @@ void RobotModel::loadYAML(YAML::Node node)
     mParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
     mChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
 
+    mLinkCollisionMap = parseYAMLMap<pLink_geom_t>(node["obj_geom_dict"]);
 
 
     build_frame_Tree();
@@ -81,7 +89,7 @@ void RobotModel::build_frame_Tree()
 
     mTf_tree.updateVEmap();
     mTf_tree.updateTFOrder();
-    mTf_tree.updateFtame_trans();
+    mTf_tree.updateFrame_trans();
 }
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
@@ -93,7 +101,7 @@ bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
 
     if (updateTree)
     {
-        mTf_tree.updateFtame_trans();
+        mTf_tree.updateFrame_trans();
     }
     return true;
 }
@@ -111,7 +119,7 @@ bool RobotModel::updateJointsValue(map<string, double> jvMap, bool updateTree)
 
     if (updateTree)
     {
-        mTf_tree.updateFtame_trans();
+        mTf_tree.updateFrame_trans();
     }
 }
 
@@ -141,7 +149,7 @@ bool RobotModel::addLink(const pLink_t plink, const string parentName, const pJo
 
     bool success = mTf_tree.add_Frame(dynamic_pointer_cast<Frame>(plink), parentName, dynamic_pointer_cast<TF>(pjoint));
     mTf_tree.updateTFOrder();
-    mTf_tree.updateFtame_trans();
+    mTf_tree.updateFrame_trans();
     return success;
 }
 
@@ -201,5 +209,36 @@ bool RobotModel::ChangeParentLink(string targetName, string newParentName)
     pj->type = "fixed";
     return true;
 }
+
+
+
+
+bool RobotModel::isCollision(string link1, string link2 )
+{
+    pLink_t pl1 = getLink_p(link1);
+    pLink_t pl2 = getLink_p(link2);
+
+    Eigen::Isometry3d tf1, tf2;
+    tf1 = pl1->rt2base;
+    tf2 = pl2->rt2base;
+
+    // 需要加上link不在collision map里的情况
+    // 考虑配合碰撞检测对
+    pLink_geom_t plg1 = mLinkCollisionMap[link1];
+    pLink_geom_t plg2 = mLinkCollisionMap[link2];
+
+    plg1->setTF(tf1);
+    plg2->setTF(tf2);
+
+    // set the collision request structure, here we just use the default setting
+    fcl::CollisionRequest<double> request;
+    // result will be returned via the collision result structure
+    fcl::CollisionResult<double> result;
+    // perform collision test
+    fcl::collide<double>(plg1->obj.get(), plg2->obj.get(), request, result);
+
+    return result.isCollision();
+}
+
 
 } // namespace RobotModel
