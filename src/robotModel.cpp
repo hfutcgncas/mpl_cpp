@@ -41,11 +41,24 @@ void operator<<(pJoint_t &pjoint, const YAML::Node &node)
     *pjoint << node;
 }
 
-// << for pJoint_t
-void operator<<(pLink_geom_t &plink_geom, const YAML::Node &node)
+// << for pLinkGeometry_t
+void operator<<(pLinkGeometry_t &pLinkGeometry, const YAML::Node &node)
 {
-    plink_geom = std::make_shared<Link_geom>();
-    *plink_geom << node;
+    pLinkGeometry = std::make_shared<Link_geometry>();
+    *pLinkGeometry << node;
+}
+
+void operator<<(collisionPair_set_t &collisionss_set, const YAML::Node &node)
+{
+    for (auto pair : node)
+    {
+        collisionPair_t cp;
+        for (auto link : pair)
+        {
+            cp.insert(link.as<string>());
+        }
+        collisionss_set.insert(cp);
+    }
 }
 
 void RobotModel::loadYAML(YAML::Node node)
@@ -57,8 +70,11 @@ void RobotModel::loadYAML(YAML::Node node)
     mParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
     mChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
 
-    mLinkCollisionMap = parseYAMLMap<pLink_geom_t>(node["obj_geom_dict"]);
+    mLinkGeometryMap = parseYAMLMap<pLinkGeometry_t>(node["obj_geom_dict"]);
 
+    
+
+    mDisable_collisionss_set << node["disable_collisionss_set"];
 
     build_frame_Tree();
 }
@@ -66,6 +82,36 @@ void RobotModel::loadYAML(YAML::Node node)
 RobotModel::RobotModel(YAML::Node node)
 {
     loadYAML(node);
+
+    set<string> collisionLinks;
+    set<string> robotLinks;
+    set<string> envLinks;
+
+    for (auto item : mLinkGeometryMap)
+    {
+        collisionLinks.insert(item.first);
+    }
+    envLinks = getFixedChildLink(getRootName());
+    envLinks.insert(getRootName());
+
+    set_difference(
+        collisionLinks.begin(),
+        collisionLinks.end(),
+        envLinks.begin(),
+        envLinks.end(),
+        inserter(robotLinks, robotLinks.begin()));
+
+
+
+
+    mCollisionDetector.setup(mLinkGeometryMap, envLinks, robotLinks, mDisable_collisionss_set);
+
+    map<string, double> jvMap;
+    updateJointsValue(jvMap, true); //init pose for envs;
+    mTf_tree.updateTfMap(); // update mTf_tree.tfMap
+    mCollisionDetector.updateEnvPose(mTf_tree.tfMap);
+    mCollisionDetector.updateRobotPose(mTf_tree.tfMap);
+   
 }
 
 void RobotModel::build_frame_Tree()
@@ -120,6 +166,17 @@ bool RobotModel::updateJointsValue(map<string, double> jvMap, bool updateTree)
     if (updateTree)
     {
         mTf_tree.updateFrame_trans();
+
+        // for(auto clink: mLinkCollisionMap)
+        // {
+        //     string name;
+        //     pLink_geom_t plg;
+        //     tie(name, plg) = clink;
+        //     pLink_t pl = getLink_p(name);
+        //     plg->setTF(pl->rt2base);
+        //     // cout<<"name: "<<name<<endl;
+        //     // cout<<"tf: "<<plg-><<endl;
+        // }
     }
 }
 
@@ -210,35 +267,40 @@ bool RobotModel::ChangeParentLink(string targetName, string newParentName)
     return true;
 }
 
+// bool RobotModel::isCollision(string link1, string link2 )
+// {
+//     auto iplg1 = mLinkCollisionMap.find(link1);
+//     auto iplg2 = mLinkCollisionMap.find(link2);
+//     if( iplg1 == mLinkCollisionMap.end() || iplg2 == mLinkCollisionMap.end() )
+//     {
+//         return false;
+//     }
 
+//     pLink_geom_t plg1 = iplg1->second;
+//     pLink_geom_t plg2 = iplg2->second;
 
+//             // pLink_t pl1 = getLink_p(link1);
+//     //         plg1->setTF(pl1->rt2base);
 
-bool RobotModel::isCollision(string link1, string link2 )
-{
-    pLink_t pl1 = getLink_p(link1);
-    pLink_t pl2 = getLink_p(link2);
+//     // pLink_t pl2 = getLink_p(link2);
+//     //         plg2->setTF(pl2->rt2base);
 
-    Eigen::Isometry3d tf1, tf2;
-    tf1 = pl1->rt2base;
-    tf2 = pl2->rt2base;
+//     // set the collision request structure, here we just use the default setting
+//     fcl::CollisionRequest<double> request;
+//     // result will be returned via the collision result structure
+//     fcl::CollisionResult<double> result;
+//     // perform collision test
+//     result.clear();
 
-    // 需要加上link不在collision map里的情况
-    // 考虑配合碰撞检测对
-    pLink_geom_t plg1 = mLinkCollisionMap[link1];
-    pLink_geom_t plg2 = mLinkCollisionMap[link2];
+//     fcl::CollisionObjectd * o1, *o2;
+//     o1 = plg1->obj.get();
+//     o2 = plg2->obj.get();
+//     // o1->setTransform(pl1->rt2base*plg1->tf_base);
+//     // o2->setTransform(pl2->rt2base*plg2->tf_base);
+//     fcl::collide<double>(o1, o2, request, result);
 
-    plg1->setTF(tf1);
-    plg2->setTF(tf2);
-
-    // set the collision request structure, here we just use the default setting
-    fcl::CollisionRequest<double> request;
-    // result will be returned via the collision result structure
-    fcl::CollisionResult<double> result;
-    // perform collision test
-    fcl::collide<double>(plg1->obj.get(), plg2->obj.get(), request, result);
-
-    return result.isCollision();
-}
-
+//     // cout<<"here2"<<endl;
+//     return result.isCollision();
+// }
 
 } // namespace RobotModel
