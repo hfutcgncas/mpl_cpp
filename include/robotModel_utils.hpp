@@ -217,20 +217,20 @@ public:
         if(type == "Box")
         {
             std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
-            std::shared_ptr<fcl::Box<double>> obj_geom = std::make_shared<fcl::Box<double>>(value[0], value[1], value[2]);
-            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
+            std::shared_ptr<fcl::Box<double>> obj_geom_box = std::make_shared<fcl::Box<double>>(value[0], value[1], value[2]);
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom_box);
         }
         else if (type == "Cylinder")
         {
             std::vector<double> value = parseYAMLList<double>(node["geom"]["value"]);
-            std::shared_ptr<fcl::Cylinder<double>> obj_geom = std::make_shared<fcl::Cylinder<double>>(value[0], value[1]);
-            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
+            std::shared_ptr<fcl::Cylinder<double>> obj_geom_cy = std::make_shared<fcl::Cylinder<double>>(value[0], value[1]);
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom_cy);
         }
         else if (type == "Sphere")
         {
             double value = node["geom"]["value"].as<double>();
-            std::shared_ptr<fcl::Sphere<double>> obj_geom = std::make_shared<fcl::Sphere<double>>(value);
-            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom);
+            std::shared_ptr<fcl::Sphere<double>> obj_geom_sp = std::make_shared<fcl::Sphere<double>>(value);
+            obj = std::make_shared<fcl::CollisionObject<double>>(obj_geom_sp);
         }
         else if (type == "BVHModel")
         {
