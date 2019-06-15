@@ -41,6 +41,7 @@ public:
 
     Frame()
     {
+        // name = ""
         rt2base = Eigen::Isometry3d::Identity();
     }
 
@@ -108,11 +109,14 @@ typedef typename graph_traits<DiGraph>::in_edge_iterator in_edge_iterator_t;
 class TF_Graph
 {
 
-public:
+    public:
+
     DiGraph g;
     // LGraph g;
     map<string, vertex_descriptor_t> Vmap;
     map<string, edge_descriptor_t> Emap;
+
+    map<string, Eigen::Isometry3d> tfMap;
 
     TFOrder_t TFOrder;
 
@@ -123,7 +127,7 @@ public:
         return &TFOrder;
     }
 
-    bool updateFtame_trans()
+    bool updateFrame_trans()
     {
         if (TFOrder.size() == 0)
         {
@@ -149,6 +153,8 @@ public:
             }
             // std::cout<<"================"<<endl;
         }
+
+        updateTfMap();
 
         return true;
     }
@@ -218,11 +224,13 @@ public:
         updateTFOrder();
         assert(~TFOrder.empty());
 
-        for (vertex_descriptor_t v : TFOrder)
-        {
-            // return the first item
-            return g[v]->name;
-        }
+        // for (vertex_descriptor_t v : TFOrder)
+        // {
+        //     // return the first item
+        //     return g[v]->name;
+        // }
+        vertex_descriptor_t v = *TFOrder.begin();
+        return g[v]->name;
     }
     // 判断是否是叶子节点
     bool isLeafFrame(const string frameName)
@@ -251,6 +259,17 @@ public:
             }
         }
     }
+
+    bool updateTfMap()
+    {
+        for(auto item:Vmap)
+        {
+            tfMap[item.first] = g[item.second]->rt2base;
+        }
+    }
+    
+    
+    
 
     // 删 ======================================================
     // 删除frame。只删除叶子节点，对非叶子节点无操作
@@ -391,14 +410,37 @@ public:
         {
             vp = source(*in_i, g);
             return pair<pFrame_t, pTF_t>(g[vp], g[*in_i]);
-            ;
+        }
+    }
+
+    set<pair<pFrame_t, pTF_t>> getChildVE(string frameName)
+    {
+        vertex_descriptor_t vf, vc;
+        out_edge_iterator_t out_i, out_end;
+        set<pair<pFrame_t, pTF_t>> rt;
+
+        vf = Vmap.at(frameName);
+        boost::tie(out_i, out_end) = out_edges(Vmap[frameName], g);
+        if (out_i == out_end)
+        {
+            return rt;
+        }
+        else
+        {
+            for (; out_i != out_end; out_i++)
+            {
+                vc = target(*out_i, g);
+                rt.insert(pair<pFrame_t, pTF_t>(g[vc], g[*out_i]));
+            }
+
+            return rt;
         }
     }
 
     bool ChangeParent(string frameName, string newParentName)
     {
         updateVEmap();
-        updateFtame_trans();
+        updateFrame_trans();
 
         pFrame_t pf, pOldParenf;
         pTF_t ptf;
@@ -416,7 +458,7 @@ public:
 
         updateVEmap();
         updateTFOrder();
-        updateFtame_trans();
+        updateFrame_trans();
         return true;
     }
 

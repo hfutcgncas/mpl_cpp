@@ -41,6 +41,26 @@ void operator<<(pJoint_t &pjoint, const YAML::Node &node)
     *pjoint << node;
 }
 
+// << for pLinkGeometry_t
+void operator<<(pLinkGeometry_t &pLinkGeometry, const YAML::Node &node)
+{
+    pLinkGeometry = std::make_shared<Link_geometry>();
+    *pLinkGeometry << node;
+}
+
+void operator<<(collisionPair_set_t &collisionss_set, const YAML::Node &node)
+{
+    for (auto pair : node)
+    {
+        collisionPair_t cp;
+        for (auto link : pair)
+        {
+            cp.insert(link.as<string>());
+        }
+        collisionss_set.insert(cp);
+    }
+}
+
 void RobotModel::loadYAML(YAML::Node node)
 {
     // ControlableJoints
@@ -50,7 +70,11 @@ void RobotModel::loadYAML(YAML::Node node)
     mParentMap = parseYAMLMap<Joint_Link_pair>(node["parent_map"]);
     mChildMap = parseYAMLMap<vector<Joint_Link_pair>>(node["child_map"]);
 
+    mLinkGeometryMap = parseYAMLMap<pLinkGeometry_t>(node["obj_geom_dict"]);
 
+    
+
+    mDisable_collisionss_set << node["disable_collisionss_set"];
 
     build_frame_Tree();
 }
@@ -58,6 +82,36 @@ void RobotModel::loadYAML(YAML::Node node)
 RobotModel::RobotModel(YAML::Node node)
 {
     loadYAML(node);
+
+    set<string> collisionLinks;
+    set<string> robotLinks;
+    set<string> envLinks;
+
+    for (auto item : mLinkGeometryMap)
+    {
+        collisionLinks.insert(item.first);
+    }
+    envLinks = getFixedChildLink(getRootName());
+    envLinks.insert(getRootName());
+
+    set_difference(
+        collisionLinks.begin(),
+        collisionLinks.end(),
+        envLinks.begin(),
+        envLinks.end(),
+        inserter(robotLinks, robotLinks.begin()));
+
+
+
+
+    mCollisionDetector.setup(mLinkGeometryMap, envLinks, robotLinks, mDisable_collisionss_set);
+
+    map<string, double> jvMap;
+    updateJointsValue(jvMap, true); //init pose for envs;
+    mTf_tree.updateTfMap(); // update mTf_tree.tfMap
+    mCollisionDetector.updateEnvPose(mTf_tree.tfMap);
+    mCollisionDetector.updateRobotPose(mTf_tree.tfMap);
+   
 }
 
 void RobotModel::build_frame_Tree()
@@ -81,7 +135,7 @@ void RobotModel::build_frame_Tree()
 
     mTf_tree.updateVEmap();
     mTf_tree.updateTFOrder();
-    mTf_tree.updateFtame_trans();
+    mTf_tree.updateFrame_trans();
 }
 
 bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
@@ -93,7 +147,7 @@ bool RobotModel::setJointValue(string jName, double jValue, bool updateTree)
 
     if (updateTree)
     {
-        mTf_tree.updateFtame_trans();
+        mTf_tree.updateFrame_trans();
     }
     return true;
 }
@@ -111,7 +165,18 @@ bool RobotModel::updateJointsValue(map<string, double> jvMap, bool updateTree)
 
     if (updateTree)
     {
-        mTf_tree.updateFtame_trans();
+        mTf_tree.updateFrame_trans();
+
+        // for(auto clink: mLinkCollisionMap)
+        // {
+        //     string name;
+        //     pLink_geom_t plg;
+        //     tie(name, plg) = clink;
+        //     pLink_t pl = getLink_p(name);
+        //     plg->setTF(pl->rt2base);
+        //     // cout<<"name: "<<name<<endl;
+        //     // cout<<"tf: "<<plg-><<endl;
+        // }
     }
 }
 
@@ -141,7 +206,7 @@ bool RobotModel::addLink(const pLink_t plink, const string parentName, const pJo
 
     bool success = mTf_tree.add_Frame(dynamic_pointer_cast<Frame>(plink), parentName, dynamic_pointer_cast<TF>(pjoint));
     mTf_tree.updateTFOrder();
-    mTf_tree.updateFtame_trans();
+    mTf_tree.updateFrame_trans();
     return success;
 }
 
@@ -201,5 +266,41 @@ bool RobotModel::ChangeParentLink(string targetName, string newParentName)
     pj->type = "fixed";
     return true;
 }
+
+// bool RobotModel::isCollision(string link1, string link2 )
+// {
+//     auto iplg1 = mLinkCollisionMap.find(link1);
+//     auto iplg2 = mLinkCollisionMap.find(link2);
+//     if( iplg1 == mLinkCollisionMap.end() || iplg2 == mLinkCollisionMap.end() )
+//     {
+//         return false;
+//     }
+
+//     pLink_geom_t plg1 = iplg1->second;
+//     pLink_geom_t plg2 = iplg2->second;
+
+//             // pLink_t pl1 = getLink_p(link1);
+//     //         plg1->setTF(pl1->rt2base);
+
+//     // pLink_t pl2 = getLink_p(link2);
+//     //         plg2->setTF(pl2->rt2base);
+
+//     // set the collision request structure, here we just use the default setting
+//     fcl::CollisionRequest<double> request;
+//     // result will be returned via the collision result structure
+//     fcl::CollisionResult<double> result;
+//     // perform collision test
+//     result.clear();
+
+//     fcl::CollisionObjectd * o1, *o2;
+//     o1 = plg1->obj.get();
+//     o2 = plg2->obj.get();
+//     // o1->setTransform(pl1->rt2base*plg1->tf_base);
+//     // o2->setTransform(pl2->rt2base*plg2->tf_base);
+//     fcl::collide<double>(o1, o2, request, result);
+
+//     // cout<<"here2"<<endl;
+//     return result.isCollision();
+// }
 
 } // namespace RobotModel
