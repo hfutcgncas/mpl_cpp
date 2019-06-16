@@ -9,8 +9,16 @@
 
 #include <boost/graph/graph_traits.hpp>
 
+#include <time.h>
+
+
 int main()
 {
+    clock_t start_t, end_t1, end_t2 ;
+    double total_t1, total_t2;
+   int i;
+ 
+   start_t = clock();
 
     YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
 
@@ -36,7 +44,7 @@ int main()
 
     // robot.mTf_tree.rmFrame_recursive("link_6");
 
-
+    start_t = clock();
     std::map<std::string, double> jvm;
     jvm.insert( std::pair<std::string, double>("joint_1", 1));
     jvm.insert( std::pair<std::string, double>("joint_3", -2.02));
@@ -51,7 +59,13 @@ int main()
 
     robot.updateJointsValue(jvm, true);
 
+    end_t1 = clock();
     cout<< robot.isCollision() <<endl;
+    end_t2 = clock();
+
+    total_t1 = (double)(end_t1 - start_t) / CLOCKS_PER_SEC;
+    total_t2 = (double)(end_t2 - start_t) / CLOCKS_PER_SEC;
+   printf("CPU 占用的总时间：%f， %f\n", total_t1, total_t2  );
 
     jvm["joint_1"] = 0;
     jvm["joint_2"] = 0;
