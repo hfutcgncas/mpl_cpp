@@ -61,8 +61,9 @@ void operator<<(collisionPair_set_t &collisionss_set, const YAML::Node &node)
     }
 }
 
-void RobotModel::loadYAML(YAML::Node node)
+void RobotModel::loadYAML(YAML::Node &node)
 {
+
     // ControlableJoints
     mControlableJoints = parseYAMLList<string>(node["ControlableJoints"]);
     mJointMap = parseYAMLMap<pJoint_t>(node["joint_map"]);
@@ -82,7 +83,11 @@ void RobotModel::loadYAML(YAML::Node node)
 RobotModel::RobotModel(YAML::Node node)
 {
     loadYAML(node);
+    init();
+}
 
+void RobotModel::init()
+{
     set<string> collisionLinks;
     set<string> robotLinks;
     set<string> envLinks;
@@ -100,9 +105,6 @@ RobotModel::RobotModel(YAML::Node node)
         envLinks.begin(),
         envLinks.end(),
         inserter(robotLinks, robotLinks.begin()));
-
-
-
 
     mCollisionDetector.setup(mLinkGeometryMap, envLinks, robotLinks, mDisable_collisionss_set);
 

@@ -20,10 +20,12 @@ int main()
  
    start_t = clock();
 
-    YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
+    // YAML::Node robot_dict = YAML::LoadFile("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
 
 
-    RobotModel::RobotModel robot(robot_dict);
+    // RobotModel::RobotModel robot(robot_dict);
+
+    RobotModel::RobotModel robot("/home/liujianran/temp/mpl_cpp/mechmind_yaml_model.yaml");
   
     // std::cout<< robot.mTf_tree.getFrame_p("tool0")->rt2base.matrix()<< std::endl;
 

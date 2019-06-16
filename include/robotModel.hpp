@@ -41,8 +41,15 @@ class RobotModel
 
     RobotModel() {}
     RobotModel(YAML::Node node);
+    RobotModel(string yaml_path)
+    {
+        YAML::Node robot_dict = YAML::LoadFile(yaml_path);
+        loadYAML(robot_dict);
+        init();
+    }
 
-    void loadYAML(YAML::Node node);
+    void init();
+    void loadYAML(YAML::Node &node);
     void build_frame_Tree();
     bool setJointValue(string jName, double jValue, bool updateTree);
     bool updateJointsValue(map<string, double> jvMap, bool updateTree);
@@ -63,10 +70,7 @@ class RobotModel
 
 
 
-    // TO DO
-
-    bool getJoint();
-    bool SwitchLinkParent();
+   
 
     public:
     tf_Graph::TF_Graph mTf_tree;
@@ -126,6 +130,11 @@ class RobotModel
         updateJointsValue(jvMap, true);
         return mCollisionDetector.checkCollision( mTf_tree.tfMap );
     }
+
+     // TO DO
+
+    bool getJoint();
+    bool SwitchLinkParent();
 
 };
 

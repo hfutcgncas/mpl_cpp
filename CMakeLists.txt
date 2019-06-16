@@ -43,6 +43,10 @@ ADD_EXECUTABLE(main ${SRC})
 target_link_libraries(main  yaml-cpp fcl ccd )
 
 
+add_library(mpl SHARED  ${PROJECT_SOURCE_DIR}/src/robotModel.cpp)
+target_link_libraries(mpl yaml-cpp fcl ccd )
+
+
 # ADD_EXECUTABLE(main_test ${SRC_test})
 
 
