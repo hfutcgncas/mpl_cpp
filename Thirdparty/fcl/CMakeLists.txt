@@ -1,4 +1,4 @@
-#-*- mode: cmake -*-
+# -*- mode: cmake -*-
 # vi: set ft=cmake :
 
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -148,7 +148,6 @@ message(${EIGEN3_INCLUDE_DIR})
 if(EIGEN3_INCLUDE_DIR)
   set(EIGEN3_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIR}")
   set(Eigen3_FOUND ON)
-
   mark_as_advanced(EIGEN3_INCLUDE_DIR)
 endif()
 
@@ -158,9 +157,6 @@ else()
   message(SEND_ERROR "EIGEN3 (>= 3.0.5) is required by FCL")
   set(FCL_HAVE_EIGEN FALSE)
 endif()
-
-
-
 
 #===============================================================================
 # Find required dependency libccd
