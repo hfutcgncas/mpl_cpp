@@ -8,3 +8,5 @@ Thirdparty/libs
 
 tmp
 
+cython/build
+
