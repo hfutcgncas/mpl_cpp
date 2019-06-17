@@ -1,4 +1,4 @@
-# -*- mode: cmake -*-
+#-*- mode: cmake -*-
 # vi: set ft=cmake :
 
 # Copyright (c) 2012, Willow Garage, Inc.
@@ -142,12 +142,14 @@ set(PKG_CONFIG_USE_CMAKE_PREFIX_PATH ON)
 #
 # If Eigen3 is not found, manually set the cache variable EIGEN3_INCLUDE_DIR
 #===============================================================================
-find_package(Eigen3 3.0.5 QUIET CONFIG)
+find_path(EIGEN3_INCLUDE_DIR Eigen/Eigen HINTS ${CMAKE_SOURCE_DIR}/../eigen)
 
-# If Eigen3Config.cmake is not found, use the FindEigen3.cmake module
-if(NOT Eigen3_FOUND)
-  find_package(Eigen3 3.0.5 QUIET MODULE)
+message(${EIGEN3_INCLUDE_DIR})
+if(EIGEN3_INCLUDE_DIR)
+  set(EIGEN3_INCLUDE_DIRS "${EIGEN3_INCLUDE_DIR}")
   set(Eigen3_FOUND ON)
+
+  mark_as_advanced(EIGEN3_INCLUDE_DIR)
 endif()
 
 if(Eigen3_FOUND)
@@ -156,6 +158,9 @@ else()
   message(SEND_ERROR "EIGEN3 (>= 3.0.5) is required by FCL")
   set(FCL_HAVE_EIGEN FALSE)
 endif()
+
+
+
 
 #===============================================================================
 # Find required dependency libccd

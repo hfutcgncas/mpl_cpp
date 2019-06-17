@@ -4,9 +4,9 @@ PROJECT( octomap-distribution )
 ENABLE_TESTING()  # enable CTest environment of subprojects
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)  # enables -fPIC in applicable compilers (required to avoid link errors in some cases)
 
-option(BUILD_OCTOVIS_SUBPROJECT "Build targets from subproject octovis" ON)
+option(BUILD_OCTOVIS_SUBPROJECT "Build targets from subproject octovis" OFF)
 option(BUILD_DYNAMICETD3D_SUBPROJECT  "Build targets from subproject dynamicEDT3D" ON)
-option(OCTOVIS_QT5 "Link Octovis against Qt5?" NO)
+option(OCTOVIS_QT5 "Link Octovis against Qt5?" OFF)
 
 if(OCTOVIS_QT5)
 	# Compiling against QT5 requires C++11.
