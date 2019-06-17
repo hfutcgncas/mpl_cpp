@@ -199,11 +199,15 @@ endif()
 
 find_path(CCD_INCLUDE_DIR ccd/ccd.h
     HINTS ${CMAKE_SOURCE_DIR}/../libccd/src)
+
+find_path(CCD_CONFIG_INCLUDE_DIR ccd/config.h
+    HINTS ${CMAKE_SOURCE_DIR}/../libccd/build/src)
+
 find_library(CCD_LIBRARY ccd
   HINTS ${CMAKE_SOURCE_DIR}/../libs)
 
-if(CCD_INCLUDE_DIR AND CCD_LIBRARY)
-  set(CCD_INCLUDE_DIRS "${CCD_INCLUDE_DIR}")
+if(CCD_INCLUDE_DIR AND CCD_CONFIG_INCLUDE_DIR AND  CCD_LIBRARY)
+  set(CCD_INCLUDE_DIRS "${CCD_INCLUDE_DIR}" "${CCD_CONFIG_INCLUDE_DIR}")
   set(CCD_LIBRARIES "${CCD_LIBRARY}" "${M_LIBRARY}")
   set(ccd_FOUND ON)
 
