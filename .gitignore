@@ -10,3 +10,5 @@ tmp
 
 cython/build
 
+cython/pympl.cpp
+cython/pympl.so
